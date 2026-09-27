@@ -320,17 +320,15 @@ function leesSessie(){
 }
 function schrijfSessie(r, vers){
   if (r.kaal) { localStorage.setItem(SESSION_KEY, vers.access_token); return; }
+  // Zelfde vorm als Cucina: expires_at in milliseconden
   Object.assign(r.s, {
     access_token: vers.access_token,
-    refresh_token: vers.refresh_token,
-    expires_in: vers.expires_in,
-    expires_at: vers.expires_at || Math.floor(Date.now()/1000) + (vers.expires_in || 3600),
-    token_type: vers.token_type || 'bearer',
-    user: vers.user || r.s.user
+    refresh_token: vers.refresh_token || r.s.refresh_token,
+    expires_at: Date.now() + (vers.expires_in || 3600) * 1000
   });
   localStorage.setItem(SESSION_KEY, JSON.stringify(r.root));
 }
-function verlooptOp(s){ return s.expires_at || jwtData(s.access_token).exp || 0; }
+function verlooptOp(s){ const e = s.expires_at; if (e) return e > 1e11 ? Math.floor(e / 1000) : e; return jwtData(s.access_token).exp || 0; }   // Cucina gebruikt milliseconden
 let verversBezig = null;
 async function ververs(){
   if (verversBezig) return verversBezig;
@@ -377,8 +375,7 @@ async function inloggen(email, ww){
   });
   if (!res.ok) throw new Error('Inloggen mislukt. Controleer je e-mail en wachtwoord.');
   const s = await res.json();
-  s.expires_at = s.expires_at || Math.floor(Date.now()/1000) + (s.expires_in || 3600);
-  localStorage.setItem(SESSION_KEY, JSON.stringify(s));
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ access_token: s.access_token, refresh_token: s.refresh_token, expires_at: Date.now() + (s.expires_in || 3600) * 1000 }));
 }
 
 /* ============ SUPABASE REST ============ */
