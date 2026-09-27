@@ -73,6 +73,9 @@ h2{margin:0;font-family:var(--display);font-weight:700;font-size:22px}
 .suggesties{position:absolute;left:0;right:0;bottom:62px;background:var(--kaart);border:1px solid #E6E1D6;border-radius:16px;padding:6px 0;display:none}
 .suggesties.open{display:block}
 .sug-kop{font-size:13px;font-weight:600;color:var(--zacht);padding:8px 16px 4px}
+.sug-rij{display:flex;align-items:center}
+.sug-rij .sug{flex-grow:1;min-width:0;padding-right:4px}
+.vergeet{width:44px;height:44px;flex-shrink:0;border:none;background:none;color:var(--vaag);display:flex;align-items:center;justify-content:center;margin-right:6px}
 .sug{width:100%;min-height:50px;border:none;background:none;text-align:left;display:flex;align-items:center;gap:12px;padding:0 16px}
 .sug .plus{color:var(--accent);font-size:20px;width:20px}
 .sug .naam{flex-grow:1}
@@ -207,14 +210,11 @@ select.veld{appearance:none;-webkit-appearance:none;background-image:url("data:i
         <div class="labelregel"><span class="label">Categorie</span><span class="hint" id="toe-cat-hint"></span></div>
         <div class="chips" id="toe-cats"></div>
       </div>
-      <label class="vinkregel"><input type="checkbox" id="toe-vast"> Ook bewaren als vast item</label>
       <button class="hoofdknop" type="submit">Op de lijst</button>
     </form>
     <div>
       <div class="labelregel"><span class="label">Meest gebruikt</span><span class="hint" id="vast-hint"></span></div>
       <div class="vast-raster" id="vast-top"></div>
-      <button class="tekstknop" id="vast-alle-knop" style="width:100%" hidden></button>
-      <div class="groep vast-lijst" id="vast-alle" hidden></div>
     </div>
   </div>
 </section>
@@ -615,7 +615,8 @@ $('#lijst').addEventListener('click', e => {
 });
 
 /* ---------- Item toevoegen (gedeeld) ---------- */
-function voegToe({ naam, hoeveelheid = null, eenheid = null, notitie = null, categorie_id = null, alsVast = false }){
+// Alles wat je zelf toevoegt, wordt onthouden (met teller). Items uit Cucina lopen hier niet langs.
+function voegToe({ naam, hoeveelheid = null, eenheid = null, notitie = null, categorie_id = null }){
   naam = naam.trim(); if (!naam) return;
   const cat = categorie_id || D.pmap[norm(naam)] || null;
   wijzig({ tabel: T.items, soort: 'upsert', rij: {
@@ -625,10 +626,11 @@ function voegToe({ naam, hoeveelheid = null, eenheid = null, notitie = null, cat
   if (categorie_id && D.pmap[norm(naam)] !== categorie_id) wijzig({ tabel: T.pmap, soort: 'upsert', rij: { naam_norm: norm(naam), categorie_id } });
   const vast = D.vast.find(v => norm(v.naam) === norm(naam));
   if (vast) wijzig({ tabel: T.vast, soort: 'patch', id: vast.id, data: { gebruikt: (vast.gebruikt || 0) + 1 } });
-  else if (alsVast) wijzig({ tabel: T.vast, soort: 'upsert', rij: { id: uuid(), naam, hoeveelheid: hoeveelheid ? String(hoeveelheid) : null, eenheid: eenheid || null, categorie_id: cat, gebruikt: 1 } });
+  else wijzig({ tabel: T.vast, soort: 'upsert', rij: { id: uuid(), naam, hoeveelheid: hoeveelheid ? String(hoeveelheid) : null, eenheid: eenheid || null, categorie_id: cat, gebruikt: 1 } });
 }
 function voegVastToe(v){
-  voegToe({ naam: v.naam, hoeveelheid: v.hoeveelheid, eenheid: v.eenheid, categorie_id: v.categorie_id || null });
+  // Latere eigen keuze (pmap) gaat voor op de categorie van toen het product werd onthouden
+  voegToe({ naam: v.naam, hoeveelheid: v.hoeveelheid, eenheid: v.eenheid, categorie_id: D.pmap[norm(v.naam)] ? null : (v.categorie_id || null) });
   toast(v.naam + ' staat op de lijst');
 }
 
@@ -646,8 +648,8 @@ function renderSuggesties(){
   const zoek = norm(leesSnel(q).naam);
   const hits = D.vast.filter(v => norm(v.naam).includes(zoek))
     .sort((a, b) => (norm(b.naam).startsWith(zoek) - norm(a.naam).startsWith(zoek)) || (b.gebruikt - a.gebruikt)).slice(0, 5);
-  let html = hits.length ? '<div class="sug-kop">Uit vaste items</div>' : '';
-  html += hits.map(v => `<button type="button" class="sug" data-vast="${v.id}"><span class="plus">+</span><span class="naam">${esc(v.naam)}</span><span class="cat">${esc(catNaam(v.categorie_id || D.pmap[norm(v.naam)] || gokCategorie(v.naam)))}</span></button>`).join('');
+  let html = hits.length ? '<div class="sug-kop">Eerder toegevoegd</div>' : '';
+  html += hits.map(v => `<div class="sug-rij"><button type="button" class="sug" data-vast="${v.id}"><span class="plus">+</span><span class="naam">${esc(v.naam)}</span><span class="cat">${esc(catNaam(v.categorie_id || D.pmap[norm(v.naam)] || gokCategorie(v.naam)))}</span></button><button type="button" class="vergeet" data-vergeet="${v.id}" aria-label="${esc(v.naam)} vergeten"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`).join('');
   if (!hits.some(v => norm(v.naam) === zoek)) html += `<button type="button" class="sug nieuw" data-nieuw="1"><span class="plus"></span><span class="naam">Nieuw item “${esc($('#snel').value.trim())}” toevoegen</span></button>`;
   box.innerHTML = html; box.classList.add('open');
 }
@@ -656,6 +658,13 @@ $('#snel').addEventListener('blur', () => setTimeout(() => $('#suggesties').clas
 $('#snel').addEventListener('focus', renderSuggesties);
 $('#suggesties').addEventListener('pointerdown', e => e.preventDefault());   // focus houden
 $('#suggesties').addEventListener('click', e => {
+  const weg = e.target.closest('[data-vergeet]');
+  if (weg) {
+    const x = D.vast.find(y => y.id === weg.dataset.vergeet);
+    wijzig({ tabel: T.vast, soort: 'delete', id: weg.dataset.vergeet });
+    if (x) toast(x.naam + ' vergeten');
+    renderSuggesties(); return;                      // invoer laten staan
+  }
   const v = e.target.closest('[data-vast]');
   if (v) { const x = D.vast.find(y => y.id === v.dataset.vast); if (x) voegVastToe(x); }
   else if (e.target.closest('[data-nieuw]')) { voegToe(leesSnel($('#snel').value)); }
@@ -668,10 +677,10 @@ $('#snel-form').addEventListener('submit', e => {
 });
 
 /* ---------- Toevoegen-scherm ---------- */
-let toeCat = null, alleVast = false;
+let toeCat = null;
 function eenheidOpties(sel, waarde){ sel.innerHTML = EENHEDEN.map(e => `<option value="${e}"${e === (waarde || '') ? ' selected' : ''}>${e || '—'}</option>`).join(''); }
 function resetToevoegen(){
-  $('#toe-form').reset(); $('#toe-hoev').value = '1'; toeCat = null; alleVast = false;
+  $('#toe-form').reset(); $('#toe-hoev').value = '1'; toeCat = null;
   eenheidOpties($('#toe-eenheid'), 'stuks');
 }
 function catChips(doel, gekozen){
@@ -687,16 +696,8 @@ function renderToevoegen(){
   if (naam.trim()) hint = onthouden && toeCat === onthouden ? 'Onthouden voor ' + norm(naam) : (voorstel && toeCat === voorstel ? 'Voorgesteld, tik om te wijzigen' : 'Wordt onthouden voor ' + norm(naam));
   $('#toe-cat-hint').textContent = hint;
   const gesorteerd = [...D.vast].sort((a, b) => (b.gebruikt - a.gebruikt) || norm(a.naam).localeCompare(norm(b.naam), 'nl'));
-  $('#vast-hint').textContent = D.vast.length ? 'Top ' + Math.min(8, D.vast.length) + ' van je vaste items' : 'Vink hierboven "Ook bewaren als vast item" aan';
+  $('#vast-hint').textContent = D.vast.length ? 'Wat je het vaakst toevoegt' : 'Wat je vaak toevoegt, verschijnt hier';
   $('#vast-top').innerHTML = gesorteerd.slice(0, 8).map(v => `<button type="button" class="vast" data-vast="${v.id}"><span class="plus">+</span>${esc(v.naam)}</button>`).join('');
-  const knop = $('#vast-alle-knop');
-  knop.hidden = D.vast.length <= 8;
-  knop.textContent = alleVast ? 'Minder tonen' : 'Alle vaste items (' + D.vast.length + ')';
-  const alle = $('#vast-alle');
-  alle.hidden = !alleVast;
-  if (alleVast) alle.innerHTML = [...D.vast].sort((a, b) => norm(a.naam).localeCompare(norm(b.naam), 'nl')).map(v => `
-    <div class="rij"><button class="rij-tekst" data-vast="${v.id}"><span class="rij-naam">${esc(v.naam)}</span><span class="rij-sub">${esc(catNaam(v.categorie_id))}</span></button>
-    <button class="icoonknop" data-vast-weg="${v.id}" aria-label="${esc(v.naam)} uit vaste items halen"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`).join('');
 }
 $('#toe-naam').addEventListener('input', () => { toeCat = null; renderToevoegen(); });
 $('#toe-cats').addEventListener('click', e => { const c = e.target.closest('[data-cat]'); if (!c) return; toeCat = toeCat === c.dataset.cat ? null : c.dataset.cat; renderToevoegen(); });
@@ -707,15 +708,12 @@ $('#toe-form').addEventListener('submit', e => {
   e.preventDefault();
   const naam = $('#toe-naam').value.trim(); if (!naam) return;
   const h = String($('#toe-hoev').value).replace(',', '.');
-  voegToe({ naam, hoeveelheid: parseFloat(h) ? h : null, eenheid: $('#toe-eenheid').value, notitie: $('#toe-notitie').value.trim(), categorie_id: toeCat, alsVast: $('#toe-vast').checked });
+  voegToe({ naam, hoeveelheid: parseFloat(h) ? h : null, eenheid: $('#toe-eenheid').value, notitie: $('#toe-notitie').value.trim(), categorie_id: toeCat });
   toast(naam + ' staat op de lijst'); naar('lijst');
 });
 $('#s-toevoegen').addEventListener('click', e => {
-  const weg = e.target.closest('[data-vast-weg]');
-  if (weg) { const v = D.vast.find(x => x.id === weg.dataset.vastWeg); wijzig({ tabel: T.vast, soort: 'delete', id: weg.dataset.vastWeg }); if (v) toast(v.naam + ' is geen vast item meer'); return; }
   const v = e.target.closest('[data-vast]');
   if (v) { const x = D.vast.find(y => y.id === v.dataset.vast); if (x) voegVastToe(x); return; }
-  if (e.target.closest('#vast-alle-knop')) { alleVast = !alleVast; renderToevoegen(); }
 });
 
 /* ---------- Bewerken ---------- */
