@@ -6,7 +6,7 @@
 // Je hoeft dit bestand NIET aan te passen bij een nieuwe versie van index.html.
 
 const PREFIX = 'boodschappen-';
-const CACHE = PREFIX + 'v1';
+const CACHE = PREFIX + 'v2';
 const APP = new URL('index.html', self.registration.scope).href;
 const VOORAF = ['index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];
 const EXTERN = ['cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com'];
@@ -39,6 +39,12 @@ self.addEventListener('fetch', e => {
 
   const binnenApp = url.origin === self.location.origin && url.href.startsWith(self.registration.scope);
   const isPagina = req.mode === 'navigate' || (binnenApp && (url.pathname.endsWith('/') || url.pathname.endsWith('/index.html')));
+
+  // manifest.json altijd vers van het netwerk (anders ziet Chrome een oud manifest)
+  if (binnenApp && url.pathname.endsWith('/manifest.json')) {
+    e.respondWith(fetch(req, { cache: 'no-store' }).catch(() => caches.match(req)));
+    return;
+  }
 
   if (isPagina && binnenApp) {
     e.respondWith((async () => {
