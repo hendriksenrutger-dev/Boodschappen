@@ -165,6 +165,10 @@ select.veld{appearance:none;-webkit-appearance:none;background-image:url("data:i
     </div>
   </header>
   <div class="melding" id="offline-melding" hidden></div>
+  <div id="installeer-balk" hidden style="margin:0 22px 10px;padding:12px 14px;background:var(--accent-licht);border-radius:14px;align-items:center;gap:12px">
+    <span style="flex-grow:1;font-size:14px;font-weight:500;color:var(--accent)">Installeer Boodschappen als app</span>
+    <button id="installeer-knop" style="height:40px;padding:0 16px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-weight:600;font-size:14px">Installeren</button>
+  </div>
   <main class="inhoud" id="lijst"></main>
   <div class="onderbalk">
     <div class="onderbalk-in">
@@ -832,6 +836,24 @@ function start(){
   schermAan(); verwerk(); laadAlles(); startRealtime();
 }
 start();
+
+/* ============ INSTALLEREN VANUIT DE APP ============ */
+let installPrompt = null;
+const alsApp = () => window.matchMedia('(display-mode: standalone)').matches;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();                                // eigen knop i.p.v. Chrome-balk
+  installPrompt = e;
+  if (!alsApp()) { const b = $('#installeer-balk'); b.hidden = false; b.style.display = 'flex'; }
+});
+$('#installeer-knop').addEventListener('click', async () => {
+  if (!installPrompt) return;
+  installPrompt.prompt();
+  const keuze = await installPrompt.userChoice.catch(() => null);
+  installPrompt = null;
+  const b = $('#installeer-balk'); b.hidden = true; b.style.display = 'none';
+  if (keuze && keuze.outcome === 'accepted') toast('Boodschappen wordt geïnstalleerd');
+});
+window.addEventListener('appinstalled', () => { const b = $('#installeer-balk'); b.hidden = true; b.style.display = 'none'; toast('Boodschappen is geïnstalleerd'); });
 
 /* ============ SERVICE WORKER: altijd nieuwste versie ============ */
 if ('serviceWorker' in navigator) {
