@@ -1,0 +1,31 @@
+{
+  "name": "Boodschappen",
+  "short_name": "Boodschappen",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F6F4EF",
+  "theme_color": "#F6F4EF",
+  "lang": "nl",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Bonuskaart",
+      "short_name": "Bonuskaart",
+      "url": "./?scherm=kaart",
+      "icons": [{ "src": "icon-kaart-96.png", "sizes": "96x96", "type": "image/png" }]
+    },
+    {
+      "name": "Item toevoegen",
+      "short_name": "Toevoegen",
+      "url": "./?scherm=toevoegen",
+      "icons": [{ "src": "icon-plus-96.png", "sizes": "96x96", "type": "image/png" }]
+    }
+  ]
+}
