@@ -547,8 +547,7 @@ function groepHtml(titel, lijst){
 }
 function rijHtml(i){
   let sub = '';
-  if (i.afgevinkt && i.afgevinkt_door) sub = `<span class="rij-sub">Afgevinkt door ${esc(i.afgevinkt_door)}</span>`;
-  else if (i.notitie) sub = `<span class="rij-sub">${esc(i.notitie)}</span>`;
+  if (i.notitie) sub = `<span class="rij-sub">${esc(i.notitie)}</span>`;
   if (i.recept_naam && !i.afgevinkt) sub += `<span class="rij-sub recept"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/></svg>${esc(i.recept_naam)}</span>`;
   return `<div class="rij${i.afgevinkt ? ' klaar' : ''}">
     <button class="vink${i.afgevinkt ? ' aan' : ''}" data-vink="${i.id}" aria-label="${esc(i.naam)} ${i.afgevinkt ? 'terugzetten' : 'afvinken'}">${i.afgevinkt ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>' : ''}</button>
