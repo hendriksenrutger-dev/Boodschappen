@@ -1,7 +1,7 @@
 {
   "name": "Boodschappen",
   "short_name": "Boodschappen",
-  "id": "./",
+  "id": "/Boodschappen/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
