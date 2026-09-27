@@ -487,22 +487,26 @@ function realtimeWijziging(tabel, p){
 /* ============ AFGELEIDE GEGEVENS ============ */
 const catsGesorteerd = () => [...D.cats].sort((a, b) => a.volgorde - b.volgorde);
 /* ---------- Automatisch indelen: ingebouwde productlijst ----------
-   Eigen keuzes (D.pmap) gaan altijd voor. Een categorie die je hebt hernoemd of verwijderd,
-   wordt overgeslagen. */
-const STANDAARD_INDELING = {
-  'Groente en fruit': 'ui, uien, rode ui, sjalot, sjalotten, knoflook, knoflookteentjes, tomaat, tomaten, cherrytomaten, trostomaten, snoeptomaten, paprika, paprika\'s, courgette, aubergine, wortel, wortels, winterpeen, peen, prei, selderij, bleekselderij, knolselderij, broccoli, bloemkool, spinazie, andijvie, sla, ijsbergsla, rucola, veldsla, kropsla, komkommer, champignons, kastanjechampignons, paddenstoelen, oesterzwammen, aardappel, aardappelen, aardappels, krieltjes, zoete aardappel, pompoen, spruitjes, boerenkool, witlof, venkel, radijs, radijsjes, bosui, lente-ui, gember, rode peper, chilipeper, chilipepers, jalapeno, citroen, citroenen, limoen, limoenen, sinaasappel, sinaasappels, mandarijnen, appel, appels, peer, peren, banaan, bananen, druiven, aardbeien, blauwe bessen, frambozen, mango, ananas, avocado, avocado\'s, kiwi, meloen, watermeloen, granaatappel, peterselie, basilicum, koriander, bieslook, munt, dille, tijm, rozemarijn, salie, spitskool, rodekool, witte kool, savooiekool, sugarsnaps, peultjes, taugé, tauge, edamame, asperges, bietjes, rode biet, sperziebonen, snijbonen, tuinbonen, maiskolf, pastinaak, koolrabi, paksoi, slamix, groente, fruit',
-  'Brood': 'brood, bruinbrood, witbrood, volkorenbrood, volkoren brood, stokbrood, afbakbroodjes, broodjes, pistolets, croissants, wraps, tortilla, tortilla\'s, pitabroodjes, pita, naan, beschuit, krentenbollen, ciabatta, focaccia, bagels, hamburgerbroodjes',
-  'Zuivel': 'melk, halfvolle melk, volle melk, karnemelk, yoghurt, griekse yoghurt, kwark, vla, room, slagroom, kookroom, crème fraîche, creme fraiche, zure room, boter, roomboter, margarine, halvarine, havermelk, sojamelk',
-  'Vlees en vis': 'kip, kipfilet, kipdijen, kippendijen, kipdijfilet, kippenpoten, kippenbouten, kipgehakt, gehakt, rundergehakt, varkensgehakt, half-om-half, biefstuk, rundvlees, riblappen, stoofvlees, sukadelappen, varkenshaas, varkensvlees, speklappen, spekjes, spek, ontbijtspek, bacon, pancetta, worst, worstjes, rookworst, chorizo, shoarma, gyros, zalm, zalmfilet, gerookte zalm, kabeljauw, pangasius, tilapia, garnalen, scampi, vis, visfilet, mosselen, kalkoen, kalkoenfilet, lamsvlees, lamskoteletten, hamburger, hamburgers, braadworst, schnitzel, schnitzels, gehaktballen, kipnuggets, entrecote, ossenhaas, kalfsvlees',
-  'Kaas en beleg': 'kaas, geraspte kaas, jonge kaas, belegen kaas, oude kaas, plakken kaas, parmezaan, parmezaanse kaas, parmigiano, grana padano, pecorino, mozzarella, burrata, feta, ricotta, mascarpone, geitenkaas, brie, camembert, cheddar, gorgonzola, roomkaas, smeerkaas, zuivelspread, ham, rauwe ham, beenham, prosciutto, serranoham, salami, rookvlees, filet americain, leverworst, boterhamworst, cervelaat, kipfilet beleg, hummus, tapenade, pesto, salade, eiersalade, tonijnsalade, kipsalade',
-  'Eieren en bakproducten': 'eieren, ei, eidooier, eidooiers, eiwit, eiwitten, scharreleieren, vrije-uitloopeieren, bloem, tarwebloem, patentbloem, zelfrijzend bakmeel, bakmeel, suiker, kristalsuiker, basterdsuiker, poedersuiker, rietsuiker, vanillesuiker, vanille-extract, bakpoeder, gist, maizena, cacao, cacaopoeder, cakemix, pannenkoekenmix, chocoladedruppels',
-  'Chips en snoep': 'chips, paprikachips, naturel chips, tortillachips, nachos, zoutjes, popcorn, borrelnoten, nootjes, noten, gemengde noten, walnoten, amandelen, cashewnoten, hazelnoten, pecannoten, macadamianoten, pistachenoten, pinda\'s, pindas, pijnboompitten, snoep, drop, winegums, lolly, lollys, zuurtjes, pepermunt, kauwgom, schuimpjes',
-  'Houdbaar': 'rijst, basmatirijst, risottorijst, zilvervliesrijst, pasta, spaghetti, rigatoni, penne, macaroni, fusilli, tagliatelle, lasagnebladen, orzo, noedels, mie, mienestjes, couscous, bulgur, quinoa, olie, olijfolie, zonnebloemolie, sesamolie, azijn, balsamico, balsamicoazijn, sojasaus, ketjap, hoisinsaus, oestersaus, vissaus, sambal, sriracha, tomatenpuree, tomatenblokjes, gepelde tomaten, gezeefde tomaten, passata, pastasaus, bouillon, bouillonblokje, bouillonblokjes, kippenbouillon, groentebouillon, kokosmelk, pindakaas, honing, jam, hagelslag, koffie, koffiebonen, thee, zout, peper, zwarte peper, kerrie, kerriepoeder, komijn, kurkuma, kaneel, paprikapoeder, chilipoeder, chilivlokken, oregano, gedroogde oregano, italiaanse kruiden, nootmuskaat, laurierblaadjes, paneermeel, sesamzaad, sesamzaadjes, zaadjes, venkelzaad, venkelzaadjes, kappertjes, olijven, zwarte olijven, ansjovis, tonijn, mais, kikkererwten, linzen, kidneybonen, bruine bonen, witte bonen, crackers, rijstwafels, mayonaise, ketchup, mosterd, havermout, muesli, cornflakes, ontbijtkoek, chocolade, rozijnen, tacokruiden, wijn, witte wijn, rode wijn',
-  'Diepvries': 'diepvries, ijs, doperwten, erwten, friet, patat, pizza, vissticks, bladerdeeg, diepvriesspinazie, diepvriesgroente, ijsblokjes',
-  'Drogisterij': 'tandpasta, tandenborstel, shampoo, conditioner, douchegel, deodorant, wc-papier, toiletpapier, keukenrol, keukenpapier, wasmiddel, wasverzachter, afwasmiddel, vaatwastabletten, zeep, handzeep, tissues, zakdoekjes, scheermesjes, pleisters, wattenstaafjes, vuilniszakken, aluminiumfolie, huishoudfolie, bakpapier, afwasborstel, sponsjes'
-};
+   Afgestemd op de gangpaden van jullie winkel. Eigen keuzes (D.pmap) gaan altijd voor.
+   Elke groep vindt jouw categorie via de naam (exact, of via het herkenningswoord). */
+const STANDAARD_INDELING = [
+  { naam: 'Groente en fruit', herken: /groente|fruit/, woorden: 'ui, uien, rode ui, sjalot, sjalotten, knoflook, knoflookteentjes, tomaat, tomaten, cherrytomaten, trostomaten, snoeptomaten, paprika, paprika\'s, courgette, aubergine, wortel, wortels, winterpeen, peen, prei, selderij, bleekselderij, knolselderij, broccoli, bloemkool, spinazie, andijvie, sla, ijsbergsla, rucola, veldsla, kropsla, komkommer, champignons, kastanjechampignons, paddenstoelen, oesterzwammen, aardappel, aardappelen, aardappels, krieltjes, zoete aardappel, pompoen, spruitjes, boerenkool, witlof, venkel, radijs, radijsjes, bosui, lente-ui, gember, rode peper, chilipeper, chilipepers, jalapeno, citroen, citroenen, limoen, limoenen, sinaasappel, sinaasappels, mandarijnen, appel, appels, peer, peren, banaan, bananen, druiven, aardbeien, blauwe bessen, frambozen, mango, ananas, avocado, avocado\'s, kiwi, meloen, watermeloen, granaatappel, peterselie, basilicum, koriander, bieslook, munt, dille, tijm, rozemarijn, salie, spitskool, rodekool, witte kool, savooiekool, sugarsnaps, peultjes, taugé, tauge, edamame, asperges, bietjes, rode biet, sperziebonen, snijbonen, tuinbonen, maiskolf, pastinaak, koolrabi, paksoi, slamix, groente, fruit' },
+  { naam: 'Brood', herken: /^brood|bakkerij/, woorden: 'brood, bruinbrood, witbrood, volkorenbrood, volkoren brood, stokbrood, afbakbroodjes, broodjes, pistolets, croissants, wraps, tortilla, tortilla\'s, pitabroodjes, pita, naan, beschuit, krentenbollen, ciabatta, focaccia, bagels, hamburgerbroodjes' },
+  { naam: 'Zuivel', herken: /zuivel/, woorden: 'melk, halfvolle melk, volle melk, karnemelk, yoghurt, griekse yoghurt, kwark, vla, room, slagroom, kookroom, crème fraîche, creme fraiche, zure room, boter, roomboter, margarine, halvarine, havermelk, sojamelk' },
+  { naam: 'Kaas en beleg', herken: /kaas|beleg/, woorden: 'kaas, geraspte kaas, jonge kaas, belegen kaas, oude kaas, plakken kaas, parmezaan, parmezaanse kaas, parmigiano, grana padano, pecorino, mozzarella, burrata, feta, ricotta, mascarpone, geitenkaas, brie, camembert, cheddar, gorgonzola, roomkaas, smeerkaas, zuivelspread, ham, rauwe ham, beenham, prosciutto, serranoham, salami, rookvlees, filet americain, leverworst, boterhamworst, cervelaat, hummus, tapenade, salade, eiersalade, tonijnsalade, kipsalade' },
+  { naam: 'Vlees en vis', herken: /vlees|vis/, woorden: 'kip, kipfilet, kipdijen, kippendijen, kipdijfilet, kippenpoten, kippenbouten, kipgehakt, gehakt, rundergehakt, varkensgehakt, half-om-half, biefstuk, rundvlees, riblappen, stoofvlees, sukadelappen, varkenshaas, varkensvlees, speklappen, spekjes, spek, ontbijtspek, bacon, pancetta, worst, worstjes, rookworst, chorizo, shoarma, gyros, zalm, zalmfilet, gerookte zalm, kabeljauw, pangasius, tilapia, garnalen, scampi, vis, visfilet, mosselen, kalkoen, kalkoenfilet, lamsvlees, lamskoteletten, hamburger, hamburgers, braadworst, schnitzel, schnitzels, gehaktballen, kipnuggets, entrecote, ossenhaas, kalfsvlees' },
+  { naam: 'Eieren en bakproducten', herken: /eieren|bak/, woorden: 'eieren, ei, eidooier, eidooiers, eiwit, eiwitten, scharreleieren, vrije-uitloopeieren, bloem, tarwebloem, patentbloem, zelfrijzend bakmeel, bakmeel, suiker, kristalsuiker, basterdsuiker, poedersuiker, rietsuiker, vanillesuiker, vanille-extract, bakpoeder, gist, maizena, cacao, cacaopoeder, cakemix, pannenkoekenmix, chocoladedruppels, paneermeel' },
+  { naam: 'Chips en snoep', herken: /chips|snoep|noten/, woorden: 'chips, paprikachips, naturel chips, tortillachips, nachos, zoutjes, popcorn, borrelnoten, nootjes, noten, gemengde noten, walnoten, amandelen, cashewnoten, hazelnoten, pecannoten, macadamianoten, pistachenoten, pinda\'s, pindas, pijnboompitten, snoep, drop, winegums, lolly, lollys, zuurtjes, pepermunt, kauwgom, schuimpjes' },
+  { naam: 'Kruiden', herken: /kruid|specerij/, woorden: 'zout, zeezout, peper, zwarte peper, peper en zout, zout en peper, kerrie, kerriepoeder, komijn, komijnzaad, kurkuma, kaneel, paprikapoeder, gerookt paprikapoeder, chilipoeder, chilivlokken, cayennepeper, gedroogde oregano, oregano, italiaanse kruiden, provençaalse kruiden, nootmuskaat, laurierblaadjes, laurier, knoflookpoeder, uienpoeder, gemberpoeder, garam masala, ras el hanout, kruidenmix, tacokruiden, bouillon, bouillonblokje, bouillonblokjes, bouillonpoeder, kippenbouillon, groentebouillon, runderbouillon, venkelzaad, venkelzaadjes, sesamzaad, sesamzaadjes, zaadjes' },
+  { naam: 'Koffie en thee', herken: /koffie|thee/, woorden: 'koffie, koffiebonen, gemalen koffie, koffiepads, koffiecups, oploskoffie, thee, theezakjes, groene thee, muntthee' },
+  { naam: 'Pasta, olie en sauzen', herken: /pasta/, woorden: 'pasta, spaghetti, rigatoni, penne, macaroni, fusilli, farfalle, linguine, tagliatelle, pappardelle, lasagnebladen, lasagne, orzo, gnocchi, pastasaus, pesto, passata, gezeefde tomaten, tomatenblokjes, gepelde tomaten, tomaten uit blik, tomaten in blik, tomatenpuree, tonijn, tonijn in blik, ansjovis, sardines, makreel in blik, olie, olijfolie, zonnebloemolie, arachideolie, azijn, balsamico, balsamicoazijn, wijnazijn, witte wijnazijn' },
+  { naam: 'Wereldkeuken', herken: /wereld/, woorden: 'rijst, basmatirijst, pandanrijst, zilvervliesrijst, risottorijst, jasmijnrijst, noedels, mie, mienestjes, rijstnoedels, udon, sojasaus, ketjap, hoisinsaus, oestersaus, vissaus, teriyakisaus, sambal, sriracha, sweet chilisaus, currypasta, rode currypasta, groene currypasta, kokosmelk, kokosroom, sesamolie, tacoschelpen, couscous, bulgur, quinoa, soep, soepen, tomatensoep, mayonaise, ketchup, mosterd, saus, sauzen, satésaus, pindasaus' },
+  { naam: 'Conserven', herken: /conserv/, woorden: 'kikkererwten, linzen, kidneybonen, bruine bonen, witte bonen, bonen in tomatensaus, mais, olijven, zwarte olijven, groene olijven, kappertjes, augurken, zilveruitjes, rode bieten in pot, doperwten in blik, sperziebonen in pot, appelmoes, ananas in blik, perziken in blik, fruit in blik' },
+  { naam: 'Drogisterij', herken: /drogist|huishoud/, woorden: 'tandpasta, tandenborstel, shampoo, conditioner, douchegel, deodorant, wc-papier, toiletpapier, keukenrol, keukenpapier, wasmiddel, wasverzachter, afwasmiddel, vaatwastabletten, zeep, handzeep, tissues, zakdoekjes, scheermesjes, pleisters, wattenstaafjes, vuilniszakken, aluminiumfolie, huishoudfolie, bakpapier, afwasborstel, sponsjes' },
+  { naam: 'Diepvries', herken: /diepvries/, woorden: 'diepvries, ijs, doperwten, erwten, friet, patat, pizza, vissticks, bladerdeeg, diepvriesspinazie, diepvriesgroente, ijsblokjes' },
+];
 const GOK_WOORDEN = [];
-Object.entries(STANDAARD_INDELING).forEach(([cat, lijst]) => lijst.split(',').map(s => norm(s)).filter(Boolean).forEach(w => GOK_WOORDEN.push({ w, cat: norm(cat), meer: /[ -]/.test(w) })));
+STANDAARD_INDELING.forEach((g, gi) => g.woorden.split(',').map(s => norm(s)).filter(Boolean).forEach(w => GOK_WOORDEN.push({ w, gi, meer: /[ -]/.test(w) })));
 const gokCache = new Map();
 function gokCategorie(naam){
   const n = norm(naam).replace(/[^a-zà-ÿ'\- ]/g, ' ').replace(/\s+/g, ' ').trim();
@@ -516,28 +520,12 @@ function gokCategorie(naam){
       else raak = los.some(w => w === g.w || (g.w.length >= 4 && (w.startsWith(g.w) || w.endsWith(g.w))));
       if (raak && (!beste || g.w.length > beste.w.length)) beste = g;
     }
-    gokCache.set(n, beste ? beste.cat : null);
+    gokCache.set(n, beste ? beste.gi : null);
   }
-  const catNaamGok = gokCache.get(n);
-  if (!catNaamGok) return null;
-  let c = D.cats.find(x => norm(x.naam) === catNaamGok);
-  if (!c && catNaamGok === 'eieren en bakproducten') {
-    // Elke eigen categorie met "eieren" of "bak" in de naam; anders eieren naar Nog indelen, bakproducten naar Houdbaar
-    c = D.cats.find(x => /eieren|bak/.test(norm(x.naam)));
-    if (!c && !/(^|[ -])(ei|eieren|eidooiers?|eiwitten?)$|eieren/.test(n)) c = D.cats.find(x => norm(x.naam) === 'houdbaar');
-  }
-  if (!c && catNaamGok === 'chips en snoep') {
-    // Elke eigen categorie met "chips", "snoep" of "noten" in de naam; anders Houdbaar
-    c = D.cats.find(x => /chips|snoep|noten/.test(norm(x.naam))) || D.cats.find(x => norm(x.naam) === 'houdbaar');
-  }
-  if (!c && catNaamGok === 'kaas en beleg') {
-    // Elke eigen categorie met "kaas" of "beleg" in de naam telt; anders terug naar Zuivel of Vlees en vis
-    c = D.cats.find(x => /kaas|beleg/.test(norm(x.naam)));
-    if (!c) {
-      const vlees = /ham|salami|rookvlees|americain|worst|cervelaat|kipfilet/.test(n);
-      c = D.cats.find(x => norm(x.naam) === (vlees ? 'vlees en vis' : 'zuivel'));
-    }
-  }
+  const gi = gokCache.get(n);
+  if (gi === null || gi === undefined) return null;
+  const groep = STANDAARD_INDELING[gi];
+  const c = D.cats.find(x => norm(x.naam) === norm(groep.naam)) || D.cats.find(x => groep.herken.test(norm(x.naam)));
   return c ? c.id : null;
 }
 const catVan = item => item.categorie_id || D.pmap[norm(item.naam)] || gokCategorie(item.naam) || null;
