@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#F6F4EF">
 <title>Boodschappen</title>
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="manifest.json?v=3">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -828,7 +828,7 @@ function start(){
   if (!leesSessie()) { toonLogin(); return; }
   const scherm = new URLSearchParams(location.search).get('scherm');
   naar(['kaart', 'toevoegen', 'volgorde'].includes(scherm) ? scherm : 'lijst');
-  if (scherm) history.replaceState(null, '', location.pathname);
+  if (location.search) history.replaceState(null, '', location.pathname);
   schermAan(); verwerk(); laadAlles(); startRealtime();
 }
 start();
