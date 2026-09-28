@@ -171,9 +171,9 @@ select.veld{appearance:none;-webkit-appearance:none;background-image:url("data:i
   <div class="streep onder"></div>
 </div>
 <script>
-  // Snelkoppeling Bonuskaart: startscherm overslaan. Vangnet: nooit langer dan 3 seconden.
+  // Snelkoppeling Bonuskaart: startscherm overslaan. Vangnet: nooit langer dan 3,5 seconde.
   if (/[?&]scherm=kaart/.test(location.search)) document.getElementById('splash').remove();
-  setTimeout(function(){ var s = document.getElementById('splash'); if (s) s.remove(); }, 3000);
+  setTimeout(function(){ var s = document.getElementById('splash'); if (s) s.remove(); }, 3500);
 </script>
 
 <!-- LOGIN -->
@@ -921,10 +921,10 @@ let splashWeg = false;
 function verbergSplash(direct){
   if (splashWeg) return; splashWeg = true;
   const s = document.getElementById('splash'); if (!s) return;
-  const wacht = direct ? 0 : Math.max(0, 500 - (performance.now() - SPLASH_START));   // minstens een halve seconde
+  const wacht = direct ? 0 : Math.max(0, 1500 - (performance.now() - SPLASH_START));  // minstens anderhalve seconde
   setTimeout(() => { s.classList.add('weg'); setTimeout(() => s.remove(), 350); }, wacht);
 }
-setTimeout(() => verbergSplash(), 2000);                                             // hooguit twee seconden
+setTimeout(() => verbergSplash(), 2500);                                             // hooguit tweeënhalve seconde
 
 function start(){
   if (!leesSessie()) { verbergSplash(true); toonLogin(); return; }
