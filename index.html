@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=Instrument+Sans:wght@400;500;600&family=Playfair+Display:ital,wght@1,700&family=Cormorant+Garamond:ital,wght@1,400&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <style>
@@ -127,10 +127,54 @@ select.veld{appearance:none;-webkit-appearance:none;background-image:url("data:i
 .toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%) translateY(20px);background:var(--inkt);color:#fff;padding:12px 18px;border-radius:14px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:30;max-width:calc(100% - 44px)}
 .toast.toon{opacity:1;transform:translateX(-50%) translateY(0)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* ---------- Startscherm ---------- */
+#splash{position:fixed;inset:0;z-index:50;background:var(--grond);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;transition:opacity .3s ease}
+#splash.weg{opacity:0;pointer-events:none}
+#splash .streep{position:absolute;left:0;right:0;height:6px;background:repeating-linear-gradient(90deg,var(--accent) 0,var(--accent) 16px,#C8733C 16px,#C8733C 32px,#9DB8A8 32px,#9DB8A8 48px,#E9DFC9 48px,#E9DFC9 64px)}
+#splash .streep.boven{top:0}#splash .streep.onder{bottom:0}
+#splash .vlek1{position:absolute;top:-110px;right:-110px;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(47,93,80,.12) 0%,rgba(47,93,80,0) 70%)}
+#splash .vlek2{position:absolute;bottom:-90px;left:-90px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(200,115,60,.10) 0%,rgba(200,115,60,0) 70%)}
+#splash .midden{position:relative;display:flex;flex-direction:column;align-items:center;padding:0 24px;animation:splashIn .6s ease-out both}
+#splash .titel{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-weight:700;font-size:44px;line-height:1.1;color:var(--accent);white-space:nowrap}
+#splash .lijntje{width:60px;height:3px;border-radius:2px;background:#C8733C;margin-top:12px}
+#splash .tag{margin:28px 0 6px;font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-size:21px;color:#6B8F80}
+#splash .emoji{font-size:24px;letter-spacing:.14em}
+#splash .laden{position:absolute;bottom:calc(64px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:10px;font-size:13px;color:var(--zacht)}
+#splash .stippen{display:flex;gap:8px}
+#splash .stippen span{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:stip 1.2s infinite}
+#splash .stippen span:nth-child(2){animation-delay:.2s}#splash .stippen span:nth-child(3){animation-delay:.4s}
+@keyframes stip{0%,80%,100%{opacity:.25}40%{opacity:1}}
+@keyframes splashIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#splash .midden,#splash .stippen span{animation:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
+
+<!-- STARTSCHERM: verdwijnt vanzelf zodra de lijst geladen is -->
+<div id="splash" aria-hidden="true">
+  <div class="streep boven"></div><div class="vlek1"></div><div class="vlek2"></div>
+  <div class="midden">
+    <svg width="120" height="64" viewBox="0 0 120 64" fill="none" style="margin-bottom:26px;opacity:.75">
+      <path d="M22 24h76l-8 30H30z" stroke="#2F5D50" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M40 24l10-16M80 24L70 8" stroke="#2F5D50" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M44 34v12M60 34v12M76 34v12" stroke="#2F5D50" stroke-width="1.5" stroke-linecap="round" opacity=".6"/>
+      <ellipse cx="46" cy="18" rx="8" ry="4.5" fill="#C8733C" opacity=".35" transform="rotate(-18 46 18)"/>
+      <ellipse cx="74" cy="17" rx="8" ry="4.5" fill="#2F5D50" opacity=".3" transform="rotate(14 74 17)"/>
+    </svg>
+    <span class="titel">Boodschappen</span>
+    <span class="lijntje"></span>
+    <p class="tag">Wat hebben we nodig?</p>
+    <div class="emoji">🥖 🧀 🍅 🥚 🧺</div>
+  </div>
+  <div class="laden"><div class="stippen"><span></span><span></span><span></span></div>Lijst ophalen</div>
+  <div class="streep onder"></div>
+</div>
+<script>
+  // Snelkoppeling Bonuskaart: startscherm overslaan. Vangnet: nooit langer dan 3 seconden.
+  if (/[?&]scherm=kaart/.test(location.search)) document.getElementById('splash').remove();
+  setTimeout(function(){ var s = document.getElementById('splash'); if (s) s.remove(); }, 3000);
+</script>
 
 <!-- LOGIN -->
 <section class="scherm" id="s-login">
@@ -871,12 +915,23 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') { schermAan(); if (leesSessie()) { verwerk(); laadAlles(); } }
 });
 
+/* ---------- Startscherm weghalen ---------- */
+const SPLASH_START = performance.now();
+let splashWeg = false;
+function verbergSplash(direct){
+  if (splashWeg) return; splashWeg = true;
+  const s = document.getElementById('splash'); if (!s) return;
+  const wacht = direct ? 0 : Math.max(0, 500 - (performance.now() - SPLASH_START));   // minstens een halve seconde
+  setTimeout(() => { s.classList.add('weg'); setTimeout(() => s.remove(), 350); }, wacht);
+}
+setTimeout(() => verbergSplash(), 2000);                                             // hooguit twee seconden
+
 function start(){
-  if (!leesSessie()) { toonLogin(); return; }
+  if (!leesSessie()) { verbergSplash(true); toonLogin(); return; }
   const scherm = new URLSearchParams(location.search).get('scherm');
   naar(['kaart', 'toevoegen', 'volgorde'].includes(scherm) ? scherm : 'lijst');
   if (location.search) history.replaceState(null, '', location.pathname);
-  schermAan(); verwerk(); laadAlles(); startRealtime();
+  schermAan(); verwerk(); laadAlles().finally(() => verbergSplash()); startRealtime();
 }
 start();
 
