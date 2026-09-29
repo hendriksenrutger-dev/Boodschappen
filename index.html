@@ -59,6 +59,17 @@ h2{margin:0;font-family:var(--display);font-weight:700;font-size:22px}
 .rij-sub{font-size:13px;color:var(--zacht);display:flex;align-items:center;gap:4px}
 .rij-sub.recept{color:var(--recept);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .rij-hoev{font-size:14px;color:var(--zacht);white-space:nowrap}
+.ingeklapt{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;padding:0 16px;border:none;border-radius:16px;background:var(--accent-licht);color:var(--accent);text-align:left}
+.ingeklapt .bol{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ingeklapt .t{flex-grow:1;font-size:15px;font-weight:600}
+.ingeklapt .n{font-size:13px;font-weight:500}
+.inklap-kop{display:flex;align-items:center;justify-content:space-between}
+.inklap-kop button{border:none;background:none;color:var(--accent);font-size:13px;font-weight:500;padding:0 2px 6px;min-height:32px}
+.hoev-knop{border:none;background:none;padding:10px 0 10px 8px;font-size:14px;color:var(--zacht);white-space:nowrap;min-height:44px}
+.rij.klaar .hoev-knop{color:var(--vaag)}
+.stapper-rij{display:flex;align-items:center;gap:2px;background:#F1EDE5;border-radius:12px;padding:2px;flex-shrink:0}
+.stapper-rij button{width:38px;height:38px;border:none;border-radius:10px;background:#fff;font-size:18px}
+.stapper-rij span{min-width:56px;text-align:center;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
 .rij.klaar .rij-naam{color:var(--vaag);text-decoration:line-through}
 .rij.klaar .rij-hoev{color:var(--vaag)}
 .leeg{padding:48px 8px;text-align:center;color:var(--zacht);font-size:15px;line-height:1.5}
@@ -628,13 +639,26 @@ function renderLijst(){
   items.forEach(i => { const c = catVan(i); (c && groepen.has(c) ? groepen.get(c) : zonder).push(i); });
   const sorteer = a => a.sort((x, y) => (x.afgevinkt - y.afgevinkt) || norm(x.naam).localeCompare(norm(y.naam), 'nl'));
   let html = '';
-  if (zonder.length) html += groepHtml('Nog indelen', sorteer(zonder));
-  catsGesorteerd().forEach(c => { const g = groepen.get(c.id); if (g.length) html += groepHtml(c.naam, sorteer(g)); });
+  if (zonder.length) html += groepHtml('Nog indelen', sorteer(zonder), 'nog');
+  catsGesorteerd().forEach(c => { const g = groepen.get(c.id); if (g.length) html += groepHtml(c.naam, sorteer(g), c.id); });
   if (klaar) html += `<button class="tekstknop" id="wis-klaar">Afgevinkte items verwijderen (${klaar})</button>`;
   $('#lijst').innerHTML = html;
 }
-function groepHtml(titel, lijst){
-  return `<div><div class="cat-kop">${esc(titel)}</div><div class="groep">${lijst.map(rijHtml).join('')}</div></div>`;
+// Categorie helemaal afgevinkt: ingeklapt tot één regel (tenzij je hem zelf openklapte)
+const uitgeklapt = new Set();
+function groepHtml(titel, lijst, sleutel){
+  const allesKlaar = lijst.every(i => i.afgevinkt);
+  if (!allesKlaar) uitgeklapt.delete(sleutel);            // weer open door nieuw item: volgende keer opnieuw inklappen
+  if (allesKlaar && !uitgeklapt.has(sleutel)) {
+    return `<button class="ingeklapt" data-klap="${esc(sleutel)}" aria-expanded="false">
+      <span class="bol"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>
+      <span class="t">${esc(titel)}</span><span class="n">${lijst.length} in het karretje</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>`;
+  }
+  const kop = allesKlaar
+    ? `<div class="inklap-kop"><div class="cat-kop">${esc(titel)}</div><button data-inklap="${esc(sleutel)}">Inklappen</button></div>`
+    : `<div class="cat-kop">${esc(titel)}</div>`;
+  return `<div>${kop}<div class="groep">${lijst.map(rijHtml).join('')}</div></div>`;
 }
 function rijHtml(i){
   let sub = '';
@@ -643,9 +667,37 @@ function rijHtml(i){
   return `<div class="rij${i.afgevinkt ? ' klaar' : ''}">
     <button class="vink${i.afgevinkt ? ' aan' : ''}" data-vink="${i.id}" aria-label="${esc(i.naam)} ${i.afgevinkt ? 'terugzetten' : 'afvinken'}">${i.afgevinkt ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>' : ''}</button>
     <button class="rij-tekst" data-bewerk="${i.id}"><span class="rij-naam">${esc(i.naam)}</span>${sub}</button>
-    <span class="rij-hoev">${esc(hoevTekst(i))}</span></div>`;
+    ${stapId === i.id
+      ? `<div class="stapper-rij" data-stapper="${i.id}"><button data-stap="-1" aria-label="Minder">−</button><span>${esc(hoevTekst(i) || '1')}</span><button data-stap="1" aria-label="Meer">+</button></div>`
+      : `<button class="hoev-knop" data-hoev="${i.id}" aria-label="Hoeveelheid van ${esc(i.naam)} aanpassen">${esc(hoevTekst(i)) || '<span style="opacity:.45">1</span>'}</button>`}</div>`;
 }
+/* ---------- Hoeveelheid snel aanpassen ---------- */
+let stapId = null, stapTimer = null;
+function stapGrootte(eenheid, n, richting){
+  const e = (eenheid || '').toLowerCase();
+  if (['g', 'gr', 'gram', 'ml'].includes(e)) return (richting > 0 ? n >= 500 : n > 500) ? 100 : 50;
+  if (['kg', 'kilo', 'l', 'liter'].includes(e)) return 0.5;
+  return 1;
+}
+function sluitStapper(){ if (!stapId) return; stapId = null; clearTimeout(stapTimer); renderLijst(); }
+function houdStapperOpen(){ clearTimeout(stapTimer); stapTimer = setTimeout(sluitStapper, 5000); }
+document.addEventListener('click', e => { if (stapId && !e.target.closest('[data-stapper],[data-hoev]')) sluitStapper(); });
+
 $('#lijst').addEventListener('click', e => {
+  const hk = e.target.closest('[data-hoev]');
+  if (hk) { stapId = hk.dataset.hoev; houdStapperOpen(); renderLijst(); return; }
+  const st = e.target.closest('[data-stap]');
+  if (st) {
+    const i = D.items.find(x => x.id === stapId); if (!i) return;
+    const r = +st.dataset.stap;
+    const n = parseFloat(String(i.hoeveelheid || '').replace(',', '.')) || (i.hoeveelheid ? 0 : 1);
+    const stap = stapGrootte(i.eenheid, n, r);
+    const nieuw = Math.max(stap, Math.round((n + r * stap) * 100) / 100);
+    wijzig({ tabel: T.items, soort: 'patch', id: i.id, data: { hoeveelheid: String(nieuw) } });
+    houdStapperOpen(); return;
+  }
+  const kl = e.target.closest('[data-klap]'); if (kl) { uitgeklapt.add(kl.dataset.klap); renderLijst(); return; }
+  const ik = e.target.closest('[data-inklap]'); if (ik) { uitgeklapt.delete(ik.dataset.inklap); renderLijst(); return; }
   const v = e.target.closest('[data-vink]');
   if (v) {
     const i = D.items.find(x => x.id === v.dataset.vink); if (!i) return;
