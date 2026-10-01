@@ -138,6 +138,37 @@ select.veld{appearance:none;-webkit-appearance:none;background-image:url("data:i
 .toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%) translateY(20px);background:var(--inkt);color:#fff;padding:12px 18px;border-radius:14px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:30;max-width:calc(100% - 44px)}
 .toast.toon{opacity:1;transform:translateX(-50%) translateY(0)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* ---------- Waarschuwing handscanner ---------- */
+#waarschuwing{position:fixed;inset:0;z-index:60;background:var(--grond);display:none;overflow:hidden}
+#waarschuwing.open{display:block}
+#waarschuwing .streep{position:absolute;left:0;right:0;height:6px;background:repeating-linear-gradient(90deg,var(--accent) 0,var(--accent) 16px,#C8733C 16px,#C8733C 32px,#9DB8A8 32px,#9DB8A8 48px,#E9DFC9 48px,#E9DFC9 64px)}
+#waarschuwing .streep.boven{top:0}#waarschuwing .streep.onder{bottom:0}
+#waarschuwing .beeld{position:absolute;left:50%;top:calc(50% - 150px);width:160px;height:160px;margin:-80px 0 0 -80px}
+#waarschuwing .golf{position:absolute;inset:0;border-radius:50%;background:#C8733C;animation:golf 1.4s ease-out infinite}
+#waarschuwing .cirkel{position:relative;width:160px;height:160px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center}
+#waarschuwing .bel{position:absolute;right:-6px;top:-6px;width:56px;height:56px;border-radius:50%;background:#C8733C;border:4px solid var(--grond);color:#fff;display:flex;align-items:center;justify-content:center;animation:belSchud 1.2s ease-in-out infinite;transform-origin:50% 20%}
+#waarschuwing .tekst{position:absolute;left:0;right:0;top:calc(50% - 20px);padding:0 28px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
+#waarschuwing h1{font-size:40px;line-height:1.05;color:var(--accent)}
+#waarschuwing p{margin:4px 0 0;font-size:15px;line-height:1.5;color:var(--zacht)}
+#waarschuwing .knoppen{position:absolute;left:22px;right:22px;bottom:calc(40px + env(safe-area-inset-bottom,0px));max-width:516px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+#waarschuwing .hoofdknop{display:flex;align-items:center;justify-content:center;gap:10px;font-size:17px;height:58px}
+@keyframes belSchud{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}75%{transform:rotate(2deg)}}
+@keyframes golf{0%{transform:scale(1);opacity:.5}100%{transform:scale(1.55);opacity:0}}
+@media (prefers-reduced-motion:reduce){#waarschuwing .golf,#waarschuwing .bel{animation:none}}
+/* ---------- Instelling herinnering ---------- */
+.her-rij{display:flex;align-items:center;gap:14px;padding:14px 16px;width:100%;border:none;background:none;text-align:left}
+.her-rij+.her-rij{border-top:1px solid var(--lijn)}
+.her-tekst{flex-grow:1;display:flex;flex-direction:column;gap:2px}
+.her-tekst b{font-size:16px;font-weight:500}
+.her-tekst span{font-size:13px;color:var(--zacht)}
+.schakel{width:48px;height:28px;border-radius:999px;background:#D6D0C3;position:relative;flex-shrink:0;transition:background .2s}
+.schakel::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:left .2s}
+[aria-checked="true"] .schakel{background:var(--accent)}
+[aria-checked="true"] .schakel::after{left:23px}
+.her-kaart{background:var(--kaart);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.her-loc{display:flex;align-items:center;gap:12px}
+.her-loc .ico{width:40px;height:40px;border-radius:12px;background:var(--accent-licht);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.randknop{height:48px;border-radius:14px;border:1.5px solid var(--rand);background:transparent;font-size:15px;font-weight:500;color:var(--accent)}
 /* ---------- Startscherm ---------- */
 #splash{position:fixed;inset:0;z-index:50;background:var(--grond);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;transition:opacity .3s ease}
 #splash.weg{opacity:0;pointer-events:none}
@@ -163,6 +194,32 @@ select.veld{appearance:none;-webkit-appearance:none;background-image:url("data:i
 </style>
 </head>
 <body>
+
+<!-- WAARSCHUWING HANDSCANNER: alleen bij de AH -->
+<div id="waarschuwing" role="alertdialog" aria-modal="true" aria-labelledby="w-titel">
+  <div class="streep boven"></div>
+  <div class="beeld">
+    <div class="golf"></div>
+    <div class="cirkel">
+      <svg width="92" height="80" viewBox="0 0 112 96" fill="none" aria-hidden="true">
+        <path d="M8 14h14l12 50h52l12-36H28" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M34 64l-3 10h58" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="40" cy="86" r="7" fill="#fff"/><circle cx="80" cy="86" r="7" fill="#fff"/>
+        <circle cx="56" cy="18" r="7.5" fill="#E9A06B"/><circle cx="72" cy="14" r="6.5" fill="#BFD6C8"/>
+      </svg>
+    </div>
+    <div class="bel" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></div>
+  </div>
+  <div class="tekst">
+    <h1 id="w-titel">Pak een handscanner!</h1>
+    <p>Scan je bonuskaart bij de zuil, vóór je naar binnen loopt.</p>
+  </div>
+  <div class="knoppen">
+    <button class="hoofdknop" id="w-kaart"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6v12M7 6v12M10 6v8M13 6v12M16 6v8M19 6v12"/></svg>Bonuskaart tonen</button>
+    <button class="tweedeknop" id="w-lijst">Heb ik al, naar de lijst</button>
+  </div>
+  <div class="streep onder"></div>
+</div>
 
 <!-- STARTSCHERM: verdwijnt vanzelf zodra de lijst geladen is -->
 <div id="splash" aria-hidden="true">
@@ -294,6 +351,20 @@ select.veld{appearance:none;-webkit-appearance:none;background-image:url("data:i
       <button class="plusknop" aria-label="Categorie toevoegen"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
     </form>
     <p style="margin:0;font-size:13px;line-height:1.5;color:var(--zacht)">Tik op een naam om te hernoemen of te verwijderen. Items uit een verwijderde categorie gaan naar Overig.</p>
+    <h2 style="margin-top:12px">Herinnering handscanner</h2>
+    <div class="groep">
+      <button class="her-rij" id="her-aan" role="switch" aria-checked="true"><span class="her-tekst"><b>Herinnering bij de AH</b><span>Groot scherm als je de app opent bij de AH</span></span><span class="schakel"></span></button>
+      <button class="her-rij" id="her-geluid" role="switch" aria-checked="true"><span class="her-tekst"><b>Met belletje</b><span>Alleen op deze telefoon</span></span><span class="schakel"></span></button>
+    </div>
+    <div class="her-kaart">
+      <div class="her-loc">
+        <span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11a7 7 0 1 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+        <span class="her-tekst"><b>Locatie van jullie AH</b><span id="her-status">Nog niet vastgelegd</span></span>
+      </div>
+      <button class="randknop" id="her-hier">Ik sta nu bij de AH</button>
+      <button class="randknop" id="her-toestaan" hidden>Geef toestemming voor je locatie</button>
+      <p style="margin:0;font-size:13px;line-height:1.5;color:var(--zacht)">Tik op "Ik sta nu bij de AH" als je voor de deur staat. De app kijkt alleen bij het openen waar je bent, nooit op de achtergrond.</p>
+    </div>
   </div>
 </section>
 
@@ -845,6 +916,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && bewId) slu
 /* ---------- Winkelvolgorde ---------- */
 let sleept = false, bewerkCat = null, sortable = null;
 function renderVolgorde(){
+  renderHerinnering();
   if (sleept) return;
   const lijst = catsGesorteerd();
   $('#volg-lijst').innerHTML = lijst.map((c, n) => bewerkCat === c.id ? `
@@ -971,6 +1043,89 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') { schermAan(); if (leesSessie()) { verwerk(); laadAlles(); } }
 });
 
+/* ============ HERINNERING HANDSCANNER ============ */
+const HER_AAN = 'bs_her_aan', HER_GELUID = 'bs_her_geluid', HER_LAATST = 'bs_her_laatst';
+const herAan = () => localStorage.getItem(HER_AAN) !== '0';
+const herGeluid = () => localStorage.getItem(HER_GELUID) !== '0';
+function ahLocatie(){ try { return JSON.parse(D.inst.ah_locatie || 'null'); } catch { return null; } }
+function afstandMeter(c, ah){
+  const R = 6371000, r = x => x * Math.PI / 180;
+  const dLat = r(ah.lat - c.latitude), dLng = r(ah.lng - c.longitude);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(r(c.latitude)) * Math.cos(r(ah.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+async function locatieStatus(){ try { return (await navigator.permissions.query({ name: 'geolocation' })).state; } catch { return 'onbekend'; } }
+const positie = opties => new Promise((ok, fout) => navigator.geolocation.getCurrentPosition(p => ok(p.coords), fout, opties));
+
+// Bij het openen: sta je binnen 200 meter van de AH? Nooit langer dan 2 seconden zoeken, nooit om toestemming vragen.
+async function bijDeAH(){
+  if (!herAan() || !('geolocation' in navigator)) return false;
+  const ah = ahLocatie(); if (!ah) return false;
+  if (Date.now() - (+localStorage.getItem(HER_LAATST) || 0) < 3600000) return false;   // hooguit één keer per uur
+  if (await locatieStatus() !== 'granted') return false;
+  try { return afstandMeter(await positie({ enableHighAccuracy: false, timeout: 2000, maximumAge: 120000 }), ah) <= 200; }
+  catch { return false; }
+}
+
+// Ding-dong, zelf opgewekt (geen geluidsbestand nodig)
+function speelBel(){
+  if (!herGeluid()) return;
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') ctx.resume();
+    const t0 = ctx.currentTime + 0.05;
+    [[1318.5, 0], [987.8, 0.38], [1318.5, 1.0], [987.8, 1.38]].forEach(([f, t]) => {
+      [[1, 0.28], [2.01, 0.06], [3.02, 0.03]].forEach(([m, vol]) => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = 'sine'; o.frequency.value = f * m;
+        g.gain.setValueAtTime(0.0001, t0 + t);
+        g.gain.exponentialRampToValueAtTime(vol, t0 + t + 0.008);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + t + 1.3);
+        o.connect(g).connect(ctx.destination); o.start(t0 + t); o.stop(t0 + t + 1.4);
+      });
+    });
+    setTimeout(() => ctx.close().catch(() => {}), 3200);
+  } catch {}
+}
+
+function toonWaarschuwing(){
+  localStorage.setItem(HER_LAATST, String(Date.now()));
+  splashWeg = true; const s = document.getElementById('splash'); if (s) s.remove();
+  $('#waarschuwing').classList.add('open');
+  speelBel();
+}
+function sluitWaarschuwing(scherm){ $('#waarschuwing').classList.remove('open'); naar(scherm); }
+$('#w-kaart').addEventListener('click', () => sluitWaarschuwing('kaart'));
+$('#w-lijst').addEventListener('click', () => sluitWaarschuwing('lijst'));
+
+// Instellingen (onderaan Winkelvolgorde)
+async function renderHerinnering(){
+  $('#her-aan').setAttribute('aria-checked', String(herAan()));
+  $('#her-geluid').setAttribute('aria-checked', String(herGeluid()));
+  const ah = ahLocatie();
+  $('#her-status').textContent = ah ? 'Vastgelegd · geldt voor jullie allebei' : 'Nog niet vastgelegd';
+  $('#her-status').style.color = ah ? 'var(--accent)' : '';
+  $('#her-hier').textContent = ah ? 'Opnieuw vastleggen: ik sta nu bij de AH' : 'Ik sta nu bij de AH';
+  const st = await locatieStatus();
+  $('#her-toestaan').hidden = !(herAan() && ah && st !== 'granted');
+}
+$('#her-aan').addEventListener('click', () => { localStorage.setItem(HER_AAN, herAan() ? '0' : '1'); renderHerinnering(); });
+$('#her-geluid').addEventListener('click', () => { localStorage.setItem(HER_GELUID, herGeluid() ? '0' : '1'); renderHerinnering(); if (herGeluid()) speelBel(); });
+$('#her-hier').addEventListener('click', async () => {
+  const knop = $('#her-hier'); knop.disabled = true; knop.textContent = 'Locatie bepalen…';
+  try {
+    const c = await positie({ enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+    wijzig({ tabel: T.inst, soort: 'upsert', rij: { sleutel: 'ah_locatie', waarde: JSON.stringify({ lat: c.latitude, lng: c.longitude }) } });
+    toast('Locatie van de AH opgeslagen');
+  } catch { toast('Locatie niet beschikbaar. Geef de app toestemming voor je locatie.'); }
+  knop.disabled = false; renderHerinnering();
+});
+$('#her-toestaan').addEventListener('click', async () => {
+  try { await positie({ enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }); toast('Locatie toegestaan'); }
+  catch { toast('Geen toestemming. Zet locatie aan voor Chrome in de instellingen van je telefoon.'); }
+  renderHerinnering();
+});
+
 /* ---------- Startscherm weghalen ---------- */
 const SPLASH_START = performance.now();
 let splashWeg = false;
@@ -987,7 +1142,9 @@ function start(){
   const scherm = new URLSearchParams(location.search).get('scherm');
   naar(['kaart', 'toevoegen', 'volgorde'].includes(scherm) ? scherm : 'lijst');
   if (location.search) history.replaceState(null, '', location.pathname);
-  schermAan(); verwerk(); laadAlles().finally(() => verbergSplash()); startRealtime();
+  schermAan(); verwerk(); startRealtime();
+  const ahCheck = scherm === 'kaart' ? Promise.resolve(false) : bijDeAH();
+  Promise.all([laadAlles().catch(() => {}), ahCheck]).then(([, bijAH]) => { if (bijAH) toonWaarschuwing(); else verbergSplash(); });
 }
 start();
 
