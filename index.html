@@ -884,6 +884,15 @@ function ontleedSpraak(zin){
         if (hoev === 1 && (w[0] === 'halve' || w[0] === 'half')) { w.shift(); hoev = 0.5; }   // "een halve kilo"
       }
       if (w.length > 1 && w[0] in SPRAAK_EENHEID) eenh = SPRAAK_EENHEID[w.shift()];
+      // Aantal achteraan: "tomaten uit blik twee", "melk 2 liter", "eieren zes keer"
+      if (hoev === null && w.length > 1) {
+        if (w.length > 2 && ['keer', 'x', 'stuks', 'stuk'].includes(w[w.length - 1])) w.pop();
+        const getal = t => /^\d+([.,]\d+)?$/.test(t) ? parseFloat(t.replace(',', '.')) : (t in GETALLEN ? GETALLEN[t] : null);
+        const laatste = w[w.length - 1], voorlaatste = w[w.length - 2];
+        if (w.length > 2 && laatste in SPRAAK_EENHEID && getal(voorlaatste) !== null) { eenh = SPRAAK_EENHEID[w.pop()]; hoev = getal(w.pop()); }
+        else if (getal(laatste) !== null) hoev = getal(w.pop());
+        else if (/^\d+x$/.test(laatste)) hoev = parseFloat(w.pop());
+      }
       let naam = w.join(' ').trim(); if (!naam) return null;
       if (hoev === 1 && !eenh) hoev = null;                                          // "een brood" = gewoon brood
       return { naam: hoofdletter(naam), hoeveelheid: hoev ? String(hoev) : null, eenheid: eenh };
