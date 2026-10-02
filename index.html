@@ -81,6 +81,19 @@ h2{margin:0;font-family:var(--display);font-weight:700;font-size:22px}
 .veld{height:52px;border:none;border-radius:16px;background:var(--kaart);padding:0 18px;width:100%;outline:none}
 .veld:focus{box-shadow:0 0 0 2px var(--accent)}
 .plusknop{width:52px;height:52px;border-radius:16px;border:none;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.veld-wrap{position:relative;flex-grow:1;min-width:0}
+.veld-wrap .veld{padding-right:52px}
+.mic-in{position:absolute;right:4px;top:4px;width:44px;height:44px;border:none;border-radius:12px;background:transparent;color:var(--accent);display:flex;align-items:center;justify-content:center}
+.spraak-kop{display:flex;align-items:center;gap:16px}
+.spraak-mic{position:relative;width:56px;height:56px;flex-shrink:0;border:none;background:none;padding:0}
+.spraak-mic .p{position:absolute;inset:0;border-radius:50%;background:#C8733C;opacity:0}
+.spraak-mic.luistert .p{animation:puls 1.3s ease-out infinite}
+.spraak-mic .r{position:relative;width:56px;height:56px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center}
+.spraak-tekst{margin:0;font-size:16px;line-height:1.5;color:var(--zacht);font-style:italic;min-height:24px}
+.spraak-chip{height:38px;padding:0 6px 0 14px;border-radius:999px;background:var(--kaart);border:1px solid var(--rand);display:inline-flex;align-items:center;gap:6px;font-size:15px}
+.spraak-chip b{font-weight:600;color:var(--zacht)}
+.spraak-chip button{width:30px;height:30px;border:none;background:none;color:var(--vaag);font-size:18px;padding:0}
+@keyframes puls{0%{transform:scale(1);opacity:.45}100%{transform:scale(1.7);opacity:0}}
 .suggesties{position:absolute;left:0;right:0;bottom:62px;background:var(--kaart);border:1px solid #E6E1D6;border-radius:16px;padding:6px 0;display:none}
 .suggesties.open{display:block}
 .sug-kop{font-size:13px;font-weight:600;color:var(--zacht);padding:8px 16px 4px}
@@ -294,7 +307,10 @@ select.veld{appearance:none;-webkit-appearance:none;background-image:url("data:i
       <div class="suggesties" id="suggesties"></div>
       <form class="invoerregel" id="snel-form" autocomplete="off">
         <label for="snel" class="sr">Item toevoegen</label>
-        <input class="veld" id="snel" placeholder="Wat heb je nodig?" enterkeyhint="done">
+        <div class="veld-wrap">
+          <input class="veld" id="snel" placeholder="Wat heb je nodig?" enterkeyhint="done">
+          <button type="button" class="mic-in" id="mic" aria-label="Inspreken" hidden><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+        </div>
         <button type="button" class="plusknop" data-naar="toevoegen" aria-label="Uitgebreid toevoegen">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
         </button>
@@ -410,6 +426,26 @@ select.veld{appearance:none;-webkit-appearance:none;background-image:url("data:i
     <button class="hoofdknop" type="submit">Opslaan</button>
     <button class="tweedeknop gevaar" type="button" id="bew-verwijder">Verwijderen van de lijst</button>
   </form>
+</div>
+
+<!-- SPRAAKINVOER -->
+<div class="blad-achter" id="spraak" role="dialog" aria-modal="true" aria-labelledby="spraak-titel">
+  <div class="blad">
+    <div class="spraak-kop">
+      <button class="spraak-mic" id="spraak-mic" aria-label="Opnieuw inspreken"><span class="p"></span><span class="r"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span></button>
+      <div style="flex-grow:1;display:flex;flex-direction:column;gap:2px">
+        <h2 id="spraak-titel">Ik luister…</h2>
+        <span class="hint" id="spraak-hint" style="font-size:13px">Zeg wat je nodig hebt, met "en" ertussen</span>
+      </div>
+      <button class="icoonknop vlak" id="spraak-sluit" aria-label="Sluiten"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <p class="spraak-tekst" id="spraak-tekst"></p>
+    <div id="spraak-lijst-blok" hidden>
+      <span class="label">Dit zet ik op de lijst · tik × om weg te halen</span>
+      <div class="chips" id="spraak-chips"></div>
+    </div>
+    <button class="hoofdknop" id="spraak-ok" hidden></button>
+  </div>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -814,6 +850,7 @@ function leesSnel(tekst){
   return { hoeveelheid: m[1].replace(',', '.'), eenheid: e || null, naam: m[3] };
 }
 function renderSuggesties(){
+  if (typeof micZichtbaar === 'function') micZichtbaar();
   const q = norm($('#snel').value); const box = $('#suggesties');
   if (!q) { box.classList.remove('open'); box.innerHTML = ''; return; }
   const zoek = norm(leesSnel(q).naam);
@@ -825,6 +862,79 @@ function renderSuggesties(){
   box.innerHTML = html; box.classList.add('open');
 }
 $('#snel').addEventListener('input', renderSuggesties);
+/* ---------- Spraakinvoer ---------- */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let herk = null, spraakItems = [], spraakTekst = '', luistert = false;
+if (SR) $('#mic').hidden = false;
+function micZichtbaar(){ if (SR) $('#mic').hidden = !!$('#snel').value; }
+$('#snel').addEventListener('input', micZichtbaar);
+
+const GETALLEN = { 'een': 1, 'één': 1, 'twee': 2, 'drie': 3, 'vier': 4, 'vijf': 5, 'zes': 6, 'zeven': 7, 'acht': 8, 'negen': 9, 'tien': 10, 'elf': 11, 'twaalf': 12, 'half': 0.5, 'halve': 0.5, 'anderhalf': 1.5, 'anderhalve': 1.5 };
+const SPRAAK_EENHEID = { 'kilo': 'kg', 'kilogram': 'kg', 'gram': 'g', 'liter': 'l', 'stuks': 'stuks', 'stuk': 'stuks', 'pakken': 'pak', 'pakjes': 'pak', 'pakje': 'pak', 'pak': 'pak', 'blikken': 'blik', 'blikjes': 'blik', 'blikje': 'blik', 'blik': 'blik', 'zakken': 'zak', 'zakjes': 'zak', 'zakje': 'zak', 'zak': 'zak', 'flessen': 'fles', 'fles': 'fles', 'potten': 'pot', 'potjes': 'pot', 'pot': 'pot', 'bossen': 'bos', 'bosjes': 'bos', 'bos': 'bos' };
+function ontleedSpraak(zin){
+  return zin.toLowerCase()
+    .split(/\s*(?:,|;|\.|\ben\b|\bplus\b|\bverder\b|\book nog\b|\bnog\b)\s*/i)
+    .map(s => s.trim()).filter(Boolean)
+    .map(deel => {
+      const w = deel.split(/\s+/);
+      let hoev = null, eenh = null;
+      if (/^\d+([.,]\d+)?$/.test(w[0])) { hoev = parseFloat(w.shift().replace(',', '.')); }
+      else if (w[0] in GETALLEN) {
+        hoev = GETALLEN[w.shift()];
+        if (hoev === 1 && (w[0] === 'halve' || w[0] === 'half')) { w.shift(); hoev = 0.5; }   // "een halve kilo"
+      }
+      if (w.length > 1 && w[0] in SPRAAK_EENHEID) eenh = SPRAAK_EENHEID[w.shift()];
+      let naam = w.join(' ').trim(); if (!naam) return null;
+      if (hoev === 1 && !eenh) hoev = null;                                          // "een brood" = gewoon brood
+      return { naam: hoofdletter(naam), hoeveelheid: hoev ? String(hoev) : null, eenheid: eenh };
+    }).filter(Boolean);
+}
+function renderSpraak(){
+  $('#spraak-titel').textContent = luistert ? 'Ik luister…' : (spraakItems.length ? 'Klopt dit?' : 'Niets gehoord');
+  $('#spraak-hint').textContent = luistert ? 'Zeg wat je nodig hebt, met "en" ertussen' : 'Tik op de microfoon om (nog) iets in te spreken';
+  $('#spraak-mic').classList.toggle('luistert', luistert);
+  $('#spraak-tekst').textContent = spraakTekst ? '"' + spraakTekst + '"' : '';
+  $('#spraak-lijst-blok').hidden = !spraakItems.length;
+  $('#spraak-chips').innerHTML = spraakItems.map((it, n) => `<span class="spraak-chip">${esc(it.naam)}${it.hoeveelheid ? ' <b>' + esc(hoevTekst(it)) + '</b>' : ''}<button data-weg="${n}" aria-label="${esc(it.naam)} weghalen">×</button></span>`).join('');
+  const ok = $('#spraak-ok'); ok.hidden = !spraakItems.length;
+  ok.textContent = spraakItems.length === 1 ? '1 item op de lijst' : spraakItems.length + ' items op de lijst';
+}
+function startLuisteren(){
+  if (!SR) return;
+  if (!navigator.onLine) { toast('Inspreken werkt alleen met internet'); return; }
+  try { if (herk) herk.abort(); } catch {}
+  herk = new SR(); herk.lang = 'nl-NL'; herk.interimResults = true; herk.continuous = false; herk.maxAlternatives = 1;
+  let definitief = '';
+  herk.onresult = e => {
+    let tussen = ''; definitief = '';
+    for (const r of e.results) { if (r.isFinal) definitief += r[0].transcript; else tussen += r[0].transcript; }
+    spraakTekst = (definitief + ' ' + tussen).trim(); renderSpraak();
+  };
+  herk.onerror = e => {
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') toast('Geef de app toestemming voor de microfoon');
+    else if (e.error === 'network') toast('Inspreken werkt alleen met internet');
+  };
+  herk.onend = () => {
+    luistert = false;
+    if (definitief.trim()) spraakItems = spraakItems.concat(ontleedSpraak(definitief));
+    renderSpraak();
+  };
+  luistert = true; spraakTekst = ''; renderSpraak();
+  try { herk.start(); } catch { luistert = false; renderSpraak(); }
+}
+function sluitSpraak(){ try { if (herk) herk.abort(); } catch {} luistert = false; $('#spraak').classList.remove('open'); }
+$('#mic').addEventListener('click', () => { spraakItems = []; spraakTekst = ''; $('#spraak').classList.add('open'); startLuisteren(); });
+$('#spraak-mic').addEventListener('click', () => { if (!luistert) startLuisteren(); });
+$('#spraak-sluit').addEventListener('click', sluitSpraak);
+$('#spraak').addEventListener('click', e => { if (e.target.id === 'spraak') sluitSpraak(); });
+$('#spraak-chips').addEventListener('click', e => { const b = e.target.closest('[data-weg]'); if (!b) return; spraakItems.splice(+b.dataset.weg, 1); renderSpraak(); });
+$('#spraak-ok').addEventListener('click', () => {
+  const n = spraakItems.length;
+  spraakItems.forEach(it => voegToe(it));
+  sluitSpraak(); toast(n === 1 ? '1 item op de lijst' : n + ' items op de lijst');
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#spraak').classList.contains('open')) sluitSpraak(); });
+
 $('#snel').addEventListener('blur', () => setTimeout(() => $('#suggesties').classList.remove('open'), 150));
 $('#snel').addEventListener('focus', renderSuggesties);
 $('#suggesties').addEventListener('pointerdown', e => e.preventDefault());   // focus houden
