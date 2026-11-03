@@ -1211,6 +1211,15 @@ function renderSnCats(){
   $('#sn-cat-hint').textContent = !naam.trim() ? '' : (eigen && snCat === eigen ? 'Onthouden' : (voorstel && snCat === voorstel ? 'Voorgesteld' : ''));
 }
 let snGeenNl = false;
+function vreemdeTaal(naam, lang){
+  const n = ' ' + String(naam).toLowerCase().replace(/[^a-zà-ÿß'\s-]/g, ' ') + ' ';
+  const frans = /[éèêëàâçîïôûœ]|\s(de|du|des|au|aux|à|avec|sans|le|la|les|et|lait|fromage|sucre|poulet|jambon|beurre|crème|tomates?|concentré|pâtes?|riz|eau|jus|chocolat|confiture|haricots|légumes|nature|saveur|aux?)\s|\sd'|\sl'/;
+  const duits = /[äöüß]|\s(und|mit|ohne|der|die|das|milch|käse|zucker|wurst|schinken|brot|vollkorn)\s/;
+  if (lang === 'fr') return frans.test(n);
+  if (lang === 'de') return duits.test(n);
+  if (lang === 'nl' || lang === 'en') return false;
+  return frans.test(n) || duits.test(n);                    // taal onbekend: alleen bij duidelijke kenmerken
+}
 async function openNieuwProduct(code){
   snGeenNl = false;
   scanPauze = true; $('#scan').classList.add('pauze'); snCode = code; snCat = null;
@@ -1225,9 +1234,11 @@ async function openNieuwProduct(code){
     if (j && j.status === 1 && j.product) {
       const p = j.product;
       ['product_name', 'product_name_nl', 'generic_name_nl', 'brands', 'quantity'].forEach(k => { if (p[k]) p[k] = ontsleutel(p[k]); });
-      // Alleen een Nederlandse naam gebruiken; AH-producten staan er vaak in het Frans in (Belgische invoer)
-      const nl = (p.product_name_nl || '').trim() || (p.lang === 'nl' ? (p.product_name || '').trim() : '') || (p.generic_name_nl || '').trim();
-      const ander = (p.product_name || '').trim();
+      // Nederlandse naam eerst; een Engelse naam of merknaam is ook goed. Alleen echt Franse of Duitse namen
+      // niet invullen (AH-producten staan er vaak in het Frans in, door Belgische invoer).
+      const hoofd = (p.product_name || '').trim();
+      const nl = (p.product_name_nl || '').trim() || (hoofd && !vreemdeTaal(hoofd, p.lang) ? hoofd : '') || (p.generic_name_nl || '').trim();
+      const ander = hoofd;
       gevonden = [p.brands ? p.brands.split(',')[0].trim() : '', nl || ander, p.quantity || ''].filter(Boolean).join(' ');
       snGeenNl = !nl && !!ander;
       kort = nl ? opgeschoondeNaam({ product_name_nl: nl, brands: p.brands }) : '';
