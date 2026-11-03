@@ -1064,13 +1064,55 @@ function renderScanRecent(){
   const n = scanToegevoegd.length;
   $('#scan-klaar').textContent = n ? 'Klaar, ' + n + ' op de lijst' : 'Klaar';
 }
+// Hoofdcamera kiezen: op veel Android-telefoons geeft "achtercamera" de groothoeklens, die dichtbij niet scherpstelt
+const VOORKEUR_CAM = 'bs_scan_camera';
+async function openCamera(){
+  const basis = { width: { ideal: 1920 }, height: { ideal: 1080 } };
+  let gekozen = null; try { gekozen = localStorage.getItem(VOORKEUR_CAM); } catch {}
+  if (gekozen) {
+    try { return await navigator.mediaDevices.getUserMedia({ video: Object.assign({ deviceId: { exact: gekozen } }, basis), audio: false }); } catch {}
+  }
+  const s = await navigator.mediaDevices.getUserMedia({ video: Object.assign({ facingMode: { ideal: 'environment' } }, basis), audio: false });
+  try {
+    const achter = (await navigator.mediaDevices.enumerateDevices())
+      .filter(d => d.kind === 'videoinput' && /back|rear|achter|environment/i.test(d.label));
+    // Android noemt de hoofdcamera meestal "camera2 0, facing back": het laagste nummer
+    const nr = d => { const m = d.label.match(/camera2?\s*(\d+)/i); return m ? +m[1] : 99; };
+    achter.sort((a, b) => nr(a) - nr(b));
+    const hoofd = achter[0], huidig = s.getVideoTracks()[0].getSettings().deviceId;
+    if (hoofd && hoofd.deviceId && hoofd.deviceId !== huidig) {
+      s.getTracks().forEach(t => t.stop());
+      const s2 = await navigator.mediaDevices.getUserMedia({ video: Object.assign({ deviceId: { exact: hoofd.deviceId } }, basis), audio: false });
+      try { localStorage.setItem(VOORKEUR_CAM, hoofd.deviceId); } catch {}
+      return s2;
+    }
+    if (huidig) try { localStorage.setItem(VOORKEUR_CAM, huidig); } catch {}
+  } catch {}
+  return s;
+}
+async function stelScherp(track){
+  let cap = {}; try { cap = track.getCapabilities ? track.getCapabilities() : {}; } catch {}
+  const adv = [];
+  if (cap.focusMode && cap.focusMode.includes('continuous')) adv.push({ focusMode: 'continuous' });
+  if (cap.zoom && cap.zoom.max >= 1.5) adv.push({ zoom: Math.min(2, cap.zoom.max) });   // verder weg houden = scherper
+  for (const a of adv) { try { await track.applyConstraints({ advanced: [a] }); } catch {} }
+}
+async function tikScherp(){
+  const track = scanStream && scanStream.getVideoTracks()[0]; if (!track) return;
+  let cap = {}; try { cap = track.getCapabilities(); } catch {}
+  if (!cap.focusMode) return;
+  try {
+    if (cap.focusMode.includes('single-shot')) await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] });
+    if (cap.focusMode.includes('continuous')) setTimeout(() => track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(() => {}), 1200);
+  } catch {}
+}
 async function startScan(){
   if (codesTabelOk === false) toast('Let op: gescande producten worden nog niet onthouden. Draai supabase-scannen.sql in Supabase.');
   scanToegevoegd = []; scanPauze = false; scanLaatste = { code: '', t: 0 };
   $('#scan').classList.add('open'); $('#scan').classList.remove('pauze');
   $('#scan-tip').textContent = 'Camera starten…'; renderScanRecent();
   try {
-    scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+    scanStream = await openCamera();
   } catch (e) {
     stopScan(); toast(e && e.name === 'NotAllowedError' ? 'Geef de app toestemming voor de camera' : 'De camera kon niet worden gestart'); return;
   }
@@ -1078,8 +1120,9 @@ async function startScan(){
   try { await video.play(); } catch {}
   const track = scanStream.getVideoTracks()[0];
   try { const cap = track.getCapabilities ? track.getCapabilities() : {}; $('#scan-lamp').hidden = !cap.torch; } catch { $('#scan-lamp').hidden = true; }
+  await stelScherp(track);
   if (!scanDetector && !scanZX && !(await maakDetector())) { stopScan(); toast('Scannen wordt op dit toestel niet ondersteund'); return; }
-  $('#scan-tip').textContent = 'Richt op de streepjescode';
+  $('#scan-tip').textContent = 'Houd de streepjescode op 15–20 cm';
   const lus = async () => {
     if (!scanStream) return;
     if (!scanPauze && video.readyState >= 2) {
@@ -1167,7 +1210,9 @@ function renderSnCats(){
   $('#sn-cats').innerHTML = catChips('sn', snCat);
   $('#sn-cat-hint').textContent = !naam.trim() ? '' : (eigen && snCat === eigen ? 'Onthouden' : (voorstel && snCat === voorstel ? 'Voorgesteld' : ''));
 }
+let snGeenNl = false;
 async function openNieuwProduct(code){
+  snGeenNl = false;
   scanPauze = true; $('#scan').classList.add('pauze'); snCode = code; snCat = null;
   $('#sn-titel').textContent = 'Nieuw product'; $('#sn-gevonden').textContent = 'Product opzoeken…';
   $('#sn-naam').value = ''; snVoorstel = []; $('#sn-eigen-blok').hidden = true; renderSnCats();
@@ -1175,19 +1220,23 @@ async function openNieuwProduct(code){
   let gevonden = '', kort = '';
   try {
     const ctrl = new AbortController(); setTimeout(() => ctrl.abort(), 5000);
-    const r = await fetch('https://world.openfoodfacts.org/api/v2/product/' + encodeURIComponent(code) + '.json?fields=product_name,product_name_nl,brands,quantity', { signal: ctrl.signal });
+    const r = await fetch('https://world.openfoodfacts.org/api/v2/product/' + encodeURIComponent(code) + '.json?fields=product_name,product_name_nl,generic_name_nl,lang,brands,quantity', { signal: ctrl.signal });
     const j = await r.json();
     if (j && j.status === 1 && j.product) {
       const p = j.product;
-      ['product_name', 'product_name_nl', 'brands', 'quantity'].forEach(k => { if (p[k]) p[k] = ontsleutel(p[k]); });
-      gevonden = [p.brands ? p.brands.split(',')[0].trim() : '', p.product_name_nl || p.product_name || '', p.quantity || ''].filter(Boolean).join(' ');
-      kort = opgeschoondeNaam(p);
+      ['product_name', 'product_name_nl', 'generic_name_nl', 'brands', 'quantity'].forEach(k => { if (p[k]) p[k] = ontsleutel(p[k]); });
+      // Alleen een Nederlandse naam gebruiken; AH-producten staan er vaak in het Frans in (Belgische invoer)
+      const nl = (p.product_name_nl || '').trim() || (p.lang === 'nl' ? (p.product_name || '').trim() : '') || (p.generic_name_nl || '').trim();
+      const ander = (p.product_name || '').trim();
+      gevonden = [p.brands ? p.brands.split(',')[0].trim() : '', nl || ander, p.quantity || ''].filter(Boolean).join(' ');
+      snGeenNl = !nl && !!ander;
+      kort = nl ? opgeschoondeNaam({ product_name_nl: nl, brands: p.brands }) : '';
     }
   } catch {}
   if (snCode !== code) return;                            // intussen gesloten of andere code
-  $('#sn-titel').textContent = gevonden ? 'Nieuw product · gevonden in Open Food Facts' : 'Nieuw product · niet gevonden';
+  $('#sn-titel').textContent = !gevonden ? 'Nieuw product · niet gevonden' : (snGeenNl ? 'Nieuw product · geen Nederlandse naam gevonden' : 'Nieuw product · gevonden in Open Food Facts');
   $('#sn-gevonden').textContent = gevonden || 'Typ hoe het op je lijst moet heten, of kies een van je eigen producten.';
-  snVoorstel = lijktOp(kort || gevonden);
+  snVoorstel = lijktOp(kort || (snGeenNl ? '' : gevonden));
   $('#sn-naam').value = (snSterk && snVoorstel[0]) || kort || '';
   vulEigen();
   snCat = null; renderSnCats();
@@ -1228,6 +1277,8 @@ $('#sn-form').addEventListener('submit', e => {
 
 $('#cam').addEventListener('click', startScan);
 $('#scan-sluit').addEventListener('click', stopScan);
+$('#scan-video').addEventListener('click', tikScherp);
+document.querySelector('#scan .kader').addEventListener('click', tikScherp);
 $('#scan-klaar').addEventListener('click', () => { const n = scanToegevoegd.length; stopScan(); if (n) toast(n === 1 ? '1 item op de lijst' : n + ' items op de lijst'); });
 $('#scan-lamp').addEventListener('click', async () => {
   const b = $('#scan-lamp'), aan = b.getAttribute('aria-pressed') !== 'true';
