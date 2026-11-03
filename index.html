@@ -23,6 +23,7 @@
   color-scheme: light;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0;background:var(--grond);color:var(--inkt);font-family:var(--tekst);-webkit-tap-highlight-color:transparent}
 body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 button,input,select{font-family:inherit;font-size:16px;color:inherit}
@@ -82,8 +83,32 @@ h2{margin:0;font-family:var(--display);font-weight:700;font-size:22px}
 .veld:focus{box-shadow:0 0 0 2px var(--accent)}
 .plusknop{width:52px;height:52px;border-radius:16px;border:none;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .veld-wrap{position:relative;flex-grow:1;min-width:0}
-.veld-wrap .veld{padding-right:52px}
-.mic-in{position:absolute;right:4px;top:4px;width:44px;height:44px;border:none;border-radius:12px;background:transparent;color:var(--accent);display:flex;align-items:center;justify-content:center}
+.veld-wrap .veld{padding-right:18px}
+.veld-wrap.met-knoppen .veld{padding-right:96px}
+.veld-knoppen{position:absolute;right:4px;top:4px;display:flex}
+.mic-in{width:44px;height:44px;border:none;border-radius:12px;background:transparent;color:var(--accent);display:flex;align-items:center;justify-content:center}
+/* ---------- Scannen ---------- */
+#scan{position:fixed;inset:0;z-index:40;background:#111;display:none;overflow:hidden;color:#fff}
+#scan.open{display:block}
+#scan video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#scan .kader{position:absolute;left:38px;right:38px;top:30%;height:200px;max-width:480px;margin:0 auto;border:3px solid rgba(255,255,255,.95);border-radius:22px;box-shadow:0 0 0 9999px rgba(0,0,0,.45)}
+#scan .scanlijn{position:absolute;left:14px;right:14px;height:2px;background:#E9A06B;box-shadow:0 0 12px #E9A06B;animation:scanlijn 2s ease-in-out infinite}
+#scan.pauze .scanlijn{animation:none;opacity:0}
+@keyframes scanlijn{0%,100%{top:12%}50%{top:86%}}
+#scan .scan-top{position:absolute;top:calc(20px + env(safe-area-inset-top,0px));left:22px;right:22px;display:flex;justify-content:space-between}
+#scan .scan-knop{width:44px;height:44px;border-radius:14px;border:none;background:rgba(255,255,255,.18);color:#fff;display:flex;align-items:center;justify-content:center}
+#scan .scan-knop[aria-pressed="true"]{background:#fff;color:#111}
+#scan .scan-tip{position:absolute;left:0;right:0;top:calc(30% - 48px);margin:0;text-align:center;font-size:17px;font-weight:500;text-shadow:0 1px 6px rgba(0,0,0,.5)}
+#scan .scan-onder{position:absolute;left:22px;right:22px;bottom:calc(28px + env(safe-area-inset-bottom,0px));max-width:516px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+#scan .scan-onder .klein{font-size:13px;color:rgba(255,255,255,.75)}
+.scan-rij{display:flex;align-items:center;gap:12px;background:rgba(30,30,28,.72);border-radius:16px;padding:12px 14px}
+.scan-rij .bol{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.scan-rij .n{flex-grow:1;font-size:16px;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scan-rij .c{font-size:13px;color:rgba(255,255,255,.75);white-space:nowrap}
+#scan-klaar{height:54px;border-radius:16px;border:none;background:#fff;color:#1C1B19;font-size:16px;font-weight:600;margin-top:4px}
+#scan-nieuw{z-index:45}
+.scan-gevonden{font-size:14px;color:var(--zacht);line-height:1.4}
+.scan-bron{font-size:13px;font-weight:600;color:var(--recept)}
 .spraak-kop{display:flex;align-items:center;gap:16px}
 .spraak-mic{position:relative;width:56px;height:56px;flex-shrink:0;border:none;background:none;padding:0}
 .spraak-mic .p{position:absolute;inset:0;border-radius:50%;background:#C8733C;opacity:0}
@@ -307,9 +332,12 @@ select.veld{appearance:none;-webkit-appearance:none;background-image:url("data:i
       <div class="suggesties" id="suggesties"></div>
       <form class="invoerregel" id="snel-form" autocomplete="off">
         <label for="snel" class="sr">Item toevoegen</label>
-        <div class="veld-wrap">
+        <div class="veld-wrap" id="veld-wrap">
           <input class="veld" id="snel" placeholder="Wat heb je nodig?" enterkeyhint="done">
+          <div class="veld-knoppen" id="veld-knoppen">
           <button type="button" class="mic-in" id="mic" aria-label="Inspreken" hidden><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+          <button type="button" class="mic-in" id="cam" aria-label="Product scannen" hidden><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8a2 2 0 0 1 2-2h2.5l1.5-2h4l1.5 2H18a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
+          </div>
         </div>
         <button type="button" class="plusknop" data-naar="toevoegen" aria-label="Uitgebreid toevoegen">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -448,6 +476,41 @@ select.veld{appearance:none;-webkit-appearance:none;background-image:url("data:i
   </div>
 </div>
 
+<!-- SCANNEN -->
+<div id="scan" role="dialog" aria-modal="true" aria-label="Product scannen">
+  <video id="scan-video" playsinline muted></video>
+  <div class="kader"><div class="scanlijn"></div></div>
+  <p class="scan-tip" id="scan-tip">Richt op de streepjescode</p>
+  <div class="scan-top">
+    <button class="scan-knop" id="scan-sluit" aria-label="Sluiten"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <button class="scan-knop" id="scan-lamp" aria-label="Zaklamp" aria-pressed="false" hidden><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2h8l-1 6H9z"/><path d="M9 8l-1 4v8a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-8l-1-4"/></svg></button>
+  </div>
+  <div class="scan-onder">
+    <span class="klein" id="scan-recent-kop" hidden>Net toegevoegd</span>
+    <div id="scan-recent" style="display:flex;flex-direction:column;gap:8px"></div>
+    <button id="scan-klaar">Klaar</button>
+  </div>
+</div>
+
+<!-- SCANNEN: NIEUW PRODUCT -->
+<div class="blad-achter" id="scan-nieuw" role="dialog" aria-modal="true" aria-labelledby="sn-titel">
+  <form class="blad" id="sn-form" autocomplete="off">
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <span class="scan-bron" id="sn-titel">Nieuw product</span>
+      <span class="scan-gevonden" id="sn-gevonden"></span>
+    </div>
+    <div id="sn-eigen-blok" hidden>
+      <span class="label">Is het een van je eigen producten?</span>
+      <div class="chips" id="sn-eigen"></div>
+    </div>
+    <div><label class="label" for="sn-naam">Hoe heet het op je lijst?</label><input class="veld" id="sn-naam" required style="font-size:18px;font-weight:500"></div>
+    <div><div class="labelregel"><span class="label">Categorie</span><span class="hint" id="sn-cat-hint"></span></div><div class="chips" id="sn-cats"></div></div>
+    <p style="margin:0;font-size:13px;line-height:1.5;color:var(--zacht)">De app onthoudt dit. Scan je deze verpakking nog eens, dan staat hij meteen op de lijst.</p>
+    <button class="hoofdknop" type="submit">Op de lijst</button>
+    <button class="tweedeknop" type="button" id="sn-annuleer">Annuleren</button>
+  </form>
+</div>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -463,7 +526,8 @@ const T = {
   cats: 'boodschappen_categorieen',
   pmap: 'boodschappen_product_categorie',
   vast: 'boodschappen_vaste_items',
-  inst: 'boodschappen_instellingen'
+  inst: 'boodschappen_instellingen',
+  codes: 'boodschappen_barcodes'
 };
 
 /* ============ HULPJES ============ */
@@ -567,14 +631,14 @@ async function api(method, pad, body, prefer, poging = 0){
 }
 
 /* ============ DATA + WACHTRIJ ============ */
-let D = { items: [], cats: [], vast: [], pmap: {}, inst: {} };
+let D = { items: [], cats: [], vast: [], pmap: {}, inst: {}, codes: {} };
 let wachtrij = [];
 try { D = Object.assign(D, JSON.parse(localStorage.getItem(CACHE_KEY) || '{}')); } catch {}
 try { wachtrij = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]'); } catch {}
 const bewaar = () => { localStorage.setItem(CACHE_KEY, JSON.stringify(D)); localStorage.setItem(QUEUE_KEY, JSON.stringify(wachtrij)); };
 
 const TABEL = { [T.items]: 'items', [T.cats]: 'cats', [T.vast]: 'vast' };
-const SLEUTEL = { [T.items]: 'id', [T.cats]: 'id', [T.vast]: 'id', [T.pmap]: 'naam_norm', [T.inst]: 'sleutel' };
+const SLEUTEL = { [T.items]: 'id', [T.cats]: 'id', [T.vast]: 'id', [T.pmap]: 'naam_norm', [T.inst]: 'sleutel', [T.codes]: 'code' };
 
 function pasToe(op){
   if (op.tabel === T.pmap) {
@@ -582,6 +646,7 @@ function pasToe(op){
     return;
   }
   if (op.tabel === T.inst) { if (op.soort === 'upsert') D.inst[op.rij.sleutel] = op.rij.waarde; return; }
+  if (op.tabel === T.codes) { D.codes = D.codes || {}; if (op.soort === 'upsert') D.codes[op.rij.code] = op.rij.naam; else if (op.soort === 'delete') delete D.codes[op.id]; return; }
   const k = TABEL[op.tabel]; const lijst = D[k];
   if (op.soort === 'upsert') { const i = lijst.findIndex(x => x.id === op.rij.id); if (i >= 0) lijst[i] = Object.assign({}, lijst[i], op.rij); else lijst.push(Object.assign({}, op.rij)); }
   else if (op.soort === 'patch') { const x = lijst.find(x => x.id === op.id); if (x) Object.assign(x, op.data); }
@@ -612,14 +677,15 @@ async function verwerk(){
 
 async function laadAlles(){
   try {
-    const [items, cats, vast, pmap, inst] = await Promise.all([
+    const [items, cats, vast, pmap, inst, codes] = await Promise.all([
       api('GET', T.items + '?select=*&order=aangemaakt.asc'),
       api('GET', T.cats + '?select=*&order=volgorde.asc'),
       api('GET', T.vast + '?select=*'),
       api('GET', T.pmap + '?select=*'),
-      api('GET', T.inst + '?select=*')
+      api('GET', T.inst + '?select=*'),
+      api('GET', T.codes + '?select=code,naam').catch(() => [])     // tabel bestaat pas na supabase-scannen.sql
     ]);
-    D = { items, cats, vast, pmap: Object.fromEntries(pmap.map(r => [r.naam_norm, r.categorie_id])), inst: Object.fromEntries(inst.map(r => [r.sleutel, r.waarde])) };
+    D = { items, cats, vast, pmap: Object.fromEntries(pmap.map(r => [r.naam_norm, r.categorie_id])), inst: Object.fromEntries(inst.map(r => [r.sleutel, r.waarde])), codes: Object.fromEntries((codes || []).map(r => [r.code, r.naam])) };
     wachtrij.forEach(pasToe);                    // eigen onverzonden wijzigingen bovenop
     bewaar(); render();
   } catch (e) { if (!(e instanceof NetFout) && e.message !== 'nologin') console.warn(e); }
@@ -634,7 +700,7 @@ async function startRealtime(){
     if (!sb) sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { accessToken: async () => { try { return await token(); } catch { return null; } } });
     try { sb.realtime.setAuth(await token()); } catch {}
     kanaal = sb.channel('boodschappen');
-    Object.values(T).forEach(tabel => {
+    Object.values(T).filter(t => t !== T.codes).forEach(tabel => {
       kanaal.on('postgres_changes', { event: '*', schema: 'public', table: tabel }, p => realtimeWijziging(tabel, p));
     });
     kanaal.subscribe(status => { if (status === 'SUBSCRIBED') laadAlles(); });
@@ -866,7 +932,14 @@ $('#snel').addEventListener('input', renderSuggesties);
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 let herk = null, spraakItems = [], spraakTekst = '', luistert = false;
 if (SR) $('#mic').hidden = false;
-function micZichtbaar(){ if (SR) $('#mic').hidden = !!$('#snel').value; }
+const KAN_SCANNEN = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+if (KAN_SCANNEN) $('#cam').hidden = false;
+function micZichtbaar(){
+  const leeg = !$('#snel').value;
+  $('#veld-knoppen').hidden = !leeg;
+  $('#veld-wrap').classList.toggle('met-knoppen', leeg && (!!SR || KAN_SCANNEN));
+}
+micZichtbaar();
 $('#snel').addEventListener('input', micZichtbaar);
 
 const GETALLEN = { 'een': 1, 'één': 1, 'twee': 2, 'drie': 3, 'vier': 4, 'vijf': 5, 'zes': 6, 'zeven': 7, 'acht': 8, 'negen': 9, 'tien': 10, 'elf': 11, 'twaalf': 12, 'half': 0.5, 'halve': 0.5, 'anderhalf': 1.5, 'anderhalve': 1.5 };
@@ -937,6 +1010,207 @@ $('#spraak-mic').addEventListener('click', () => { if (!luistert) startLuisteren
 $('#spraak-sluit').addEventListener('click', sluitSpraak);
 $('#spraak').addEventListener('click', e => { if (e.target.id === 'spraak') sluitSpraak(); });
 $('#spraak-chips').addEventListener('click', e => { const b = e.target.closest('[data-weg]'); if (!b) return; spraakItems.splice(+b.dataset.weg, 1); renderSpraak(); });
+
+/* ---------- Scannen ---------- */
+let scanStream = null, scanTimer = null, scanDetector = null, scanZX = null, scanCanvas = null;
+let scanLaatste = { code: '', t: 0 }, scanPauze = false, scanToegevoegd = [], snCode = null, snCat = null;
+const ZXING_URL = 'https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';
+
+function laadScript(src){ return new Promise((ok, fout) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = fout; document.head.appendChild(s); }); }
+async function maakDetector(){
+  if ('BarcodeDetector' in window) {
+    try {
+      const kan = await BarcodeDetector.getSupportedFormats();
+      const fm = ['ean_13', 'ean_8', 'upc_a', 'upc_e'].filter(f => kan.includes(f));
+      if (fm.length) { scanDetector = new BarcodeDetector({ formats: fm }); return true; }
+    } catch {}
+  }
+  try {                                                   // reserve: ZXing in de browser
+    if (!window.ZXing) await laadScript(ZXING_URL);
+    const hints = new Map();
+    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.EAN_8, ZXing.BarcodeFormat.UPC_A, ZXing.BarcodeFormat.UPC_E]);
+    scanZX = new ZXing.MultiFormatReader(); scanZX.setHints(hints);
+    scanCanvas = document.createElement('canvas');
+    return true;
+  } catch { return false; }
+}
+async function leesCode(video){
+  if (scanDetector) { const r = await scanDetector.detect(video); return r.length ? r[0].rawValue : null; }
+  if (scanZX && video.videoWidth) {
+    const w = 640, hgt = Math.round(video.videoHeight * w / video.videoWidth);
+    scanCanvas.width = w; scanCanvas.height = hgt;
+    scanCanvas.getContext('2d', { willReadFrequently: true }).drawImage(video, 0, 0, w, hgt);
+    try {
+      const bmp = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(new ZXing.HTMLCanvasElementLuminanceSource(scanCanvas)));
+      return scanZX.decodeWithState(bmp).getText();
+    } catch { return null; }
+  }
+  return null;
+}
+function scanPiep(){
+  try { if (navigator.vibrate) navigator.vibrate(40); } catch {}
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)(), o = ctx.createOscillator(), g = ctx.createGain();
+    o.frequency.value = 1760; g.gain.setValueAtTime(0.0001, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.15, ctx.currentTime + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
+    o.connect(g).connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.14); setTimeout(() => ctx.close().catch(() => {}), 400);
+  } catch {}
+}
+function renderScanRecent(){
+  $('#scan-recent-kop').hidden = !scanToegevoegd.length;
+  $('#scan-recent').innerHTML = scanToegevoegd.slice(-3).reverse().map(it =>
+    `<div class="scan-rij"><span class="bol"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></span><span class="n">${esc(it.naam)}</span><span class="c">${esc(catNaam(it.cat))}</span></div>`).join('');
+  const n = scanToegevoegd.length;
+  $('#scan-klaar').textContent = n ? 'Klaar, ' + n + ' op de lijst' : 'Klaar';
+}
+async function startScan(){
+  scanToegevoegd = []; scanPauze = false; scanLaatste = { code: '', t: 0 };
+  $('#scan').classList.add('open'); $('#scan').classList.remove('pauze');
+  $('#scan-tip').textContent = 'Camera starten…'; renderScanRecent();
+  try {
+    scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+  } catch (e) {
+    stopScan(); toast(e && e.name === 'NotAllowedError' ? 'Geef de app toestemming voor de camera' : 'De camera kon niet worden gestart'); return;
+  }
+  const video = $('#scan-video'); video.srcObject = scanStream;
+  try { await video.play(); } catch {}
+  const track = scanStream.getVideoTracks()[0];
+  try { const cap = track.getCapabilities ? track.getCapabilities() : {}; $('#scan-lamp').hidden = !cap.torch; } catch { $('#scan-lamp').hidden = true; }
+  if (!scanDetector && !scanZX && !(await maakDetector())) { stopScan(); toast('Scannen wordt op dit toestel niet ondersteund'); return; }
+  $('#scan-tip').textContent = 'Richt op de streepjescode';
+  const lus = async () => {
+    if (!scanStream) return;
+    if (!scanPauze && video.readyState >= 2) {
+      try {
+        const code = await leesCode(video);
+        if (code && /^\d{8,14}$/.test(code) && !(code === scanLaatste.code && Date.now() - scanLaatste.t < 3000)) {
+          scanLaatste = { code, t: Date.now() }; scanPiep(); verwerkCode(code);
+        }
+      } catch {}
+    }
+    scanTimer = setTimeout(lus, 220);
+  };
+  lus();
+}
+function stopScan(){
+  clearTimeout(scanTimer); scanTimer = null;
+  if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
+  $('#scan-video').srcObject = null;
+  $('#scan').classList.remove('open'); $('#scan-nieuw').classList.remove('open');
+  $('#scan-lamp').setAttribute('aria-pressed', 'false');
+}
+function scanToevoegen(naam, cat){
+  voegToe({ naam, categorie_id: cat || null });
+  scanToegevoegd.push({ naam, cat: cat || D.pmap[norm(naam)] || gokCategorie(naam) }); renderScanRecent();
+}
+function verwerkCode(code){
+  const bekend = (D.codes || {})[code];
+  if (bekend) { scanToevoegen(bekend); return; }
+  openNieuwProduct(code);
+}
+
+// Eerste keer: naam opzoeken in Open Food Facts en je eigen producten voorstellen
+function opgeschoondeNaam(p){
+  let n = (p.product_name_nl || p.product_name || '').trim();
+  (p.brands || '').split(',').map(b => b.trim()).filter(Boolean).forEach(b => {
+    n = n.replace(new RegExp('^' + b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s+', 'i'), '');
+  });
+  n = n.replace(/^(ah|albert heijn|dirk|1 de beste|g'woon|jumbo)\s+/i, '')
+       .replace(/\b\d+([.,]\d+)?\s*(g|gr|gram|kg|ml|cl|l|liter|st|stuks)\b/gi, '')
+       .replace(/\s{2,}/g, ' ').trim();
+  return hoofdletter(n);
+}
+function eigenProducten(){
+  const namen = new Map();
+  D.vast.forEach(v => namen.set(norm(v.naam), v.naam));
+  Object.values(D.codes || {}).forEach(n => namen.set(norm(n), n));
+  D.items.forEach(i => { if (!namen.has(norm(i.naam))) namen.set(norm(i.naam), i.naam); });
+  return [...namen.values()];
+}
+function lijktOp(gevonden){
+  const g = norm(gevonden); if (!g) return [];
+  const woorden = g.split(/[\s,()-]+/).filter(w => w.length >= 4);
+  return eigenProducten().map(n => {
+    const e = norm(n); let s = 0;
+    if (g.includes(e)) s += 10 + e.length;
+    e.split(/\s+/).forEach(w => { if (w.length >= 4 && woorden.some(x => x.includes(w) || w.includes(x))) s += 3; });
+    return { n, s };
+  }).filter(x => x.s > 0).sort((a, b) => b.s - a.s).slice(0, 4).map(x => x.n);
+}
+function renderSnCats(){
+  const naam = $('#sn-naam').value;
+  const eigen = D.pmap[norm(naam)];
+  const voorstel = eigen || gokCategorie(naam);
+  if (!snCat && voorstel) snCat = voorstel;
+  $('#sn-cats').innerHTML = catChips('sn', snCat);
+  $('#sn-cat-hint').textContent = !naam.trim() ? '' : (eigen && snCat === eigen ? 'Onthouden' : (voorstel && snCat === voorstel ? 'Voorgesteld' : ''));
+}
+async function openNieuwProduct(code){
+  scanPauze = true; $('#scan').classList.add('pauze'); snCode = code; snCat = null;
+  $('#sn-titel').textContent = 'Nieuw product'; $('#sn-gevonden').textContent = 'Product opzoeken…';
+  $('#sn-naam').value = ''; snVoorstel = []; $('#sn-eigen-blok').hidden = true; renderSnCats();
+  $('#scan-nieuw').classList.add('open');
+  let gevonden = '', kort = '';
+  try {
+    const ctrl = new AbortController(); setTimeout(() => ctrl.abort(), 5000);
+    const r = await fetch('https://world.openfoodfacts.org/api/v2/product/' + encodeURIComponent(code) + '.json?fields=product_name,product_name_nl,brands,quantity', { signal: ctrl.signal });
+    const j = await r.json();
+    if (j && j.status === 1 && j.product) {
+      const p = j.product;
+      gevonden = [p.brands ? p.brands.split(',')[0].trim() : '', p.product_name_nl || p.product_name || '', p.quantity || ''].filter(Boolean).join(' ');
+      kort = opgeschoondeNaam(p);
+    }
+  } catch {}
+  if (snCode !== code) return;                            // intussen gesloten of andere code
+  $('#sn-titel').textContent = gevonden ? 'Nieuw product · gevonden in Open Food Facts' : 'Nieuw product · niet gevonden';
+  $('#sn-gevonden').textContent = gevonden || 'Typ hoe het op je lijst moet heten, of kies een van je eigen producten.';
+  snVoorstel = lijktOp(gevonden || kort);
+  $('#sn-naam').value = snVoorstel[0] || kort || '';
+  vulEigen();
+  snCat = null; renderSnCats();
+  markeerEigen();
+  if (!$('#sn-naam').value) $('#sn-naam').focus();
+}
+let snVoorstel = [];
+// Voorstellen: wat op het gevonden product lijkt, plus je eigen producten die passen bij wat je typt
+function vulEigen(){
+  const q = norm($('#sn-naam').value);
+  let lijst = snVoorstel.slice();
+  if (q.length >= 2) eigenProducten().filter(n => norm(n).includes(q) && !lijst.some(x => norm(x) === norm(n))).slice(0, 5).forEach(n => lijst.push(n));
+  lijst = lijst.slice(0, 6);
+  $('#sn-eigen-blok').hidden = !lijst.length;
+  $('#sn-eigen').innerHTML = lijst.map(n => `<button type="button" class="chip" data-eigen="${esc(n)}">${esc(n)}</button>`).join('');
+  markeerEigen();
+}
+function markeerEigen(){
+  const n = norm($('#sn-naam').value);
+  document.querySelectorAll('#sn-eigen [data-eigen]').forEach(b => { const aan = norm(b.dataset.eigen) === n; b.classList.toggle('aan', aan); b.setAttribute('aria-pressed', String(aan)); });
+}
+function sluitNieuwProduct(){
+  snCode = null; $('#scan-nieuw').classList.remove('open');
+  scanPauze = false; $('#scan').classList.remove('pauze'); scanLaatste.t = Date.now();
+}
+$('#sn-eigen').addEventListener('click', e => { const b = e.target.closest('[data-eigen]'); if (!b) return; $('#sn-naam').value = b.dataset.eigen; snCat = null; renderSnCats(); markeerEigen(); });
+$('#sn-naam').addEventListener('input', () => { snCat = null; renderSnCats(); vulEigen(); });
+$('#sn-cats').addEventListener('click', e => { const c = e.target.closest('[data-cat]'); if (!c) return; snCat = snCat === c.dataset.cat ? null : c.dataset.cat; renderSnCats(); });
+$('#sn-annuleer').addEventListener('click', sluitNieuwProduct);
+$('#sn-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const naam = hoofdletter($('#sn-naam').value.trim()); if (!naam || !snCode) return;
+  wijzig({ tabel: T.codes, soort: 'upsert', rij: { code: snCode, naam } });
+  scanToevoegen(naam, snCat);
+  sluitNieuwProduct();
+});
+
+$('#cam').addEventListener('click', startScan);
+$('#scan-sluit').addEventListener('click', stopScan);
+$('#scan-klaar').addEventListener('click', () => { const n = scanToegevoegd.length; stopScan(); if (n) toast(n === 1 ? '1 item op de lijst' : n + ' items op de lijst'); });
+$('#scan-lamp').addEventListener('click', async () => {
+  const b = $('#scan-lamp'), aan = b.getAttribute('aria-pressed') !== 'true';
+  try { await scanStream.getVideoTracks()[0].applyConstraints({ advanced: [{ torch: aan }] }); b.setAttribute('aria-pressed', String(aan)); } catch {}
+});
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && scanStream) stopScan(); });
+
 $('#spraak-ok').addEventListener('click', () => {
   const n = spraakItems.length;
   spraakItems.forEach(it => voegToe(it));
