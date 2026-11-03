@@ -683,9 +683,9 @@ async function laadAlles(){
       api('GET', T.vast + '?select=*'),
       api('GET', T.pmap + '?select=*'),
       api('GET', T.inst + '?select=*'),
-      api('GET', T.codes + '?select=code,naam').catch(() => [])     // tabel bestaat pas na supabase-scannen.sql
+      api('GET', T.codes + '?select=code,naam').then(r => { codesTabelOk = true; return r; }).catch(e => { if (e && e.status) codesTabelOk = false; return null; })
     ]);
-    D = { items, cats, vast, pmap: Object.fromEntries(pmap.map(r => [r.naam_norm, r.categorie_id])), inst: Object.fromEntries(inst.map(r => [r.sleutel, r.waarde])), codes: Object.fromEntries((codes || []).map(r => [r.code, r.naam])) };
+    D = { items, cats, vast, pmap: Object.fromEntries(pmap.map(r => [r.naam_norm, r.categorie_id])), inst: Object.fromEntries(inst.map(r => [r.sleutel, r.waarde])), codes: codes ? Object.fromEntries(codes.map(r => [r.code, r.naam])) : (D.codes || {}) };
     wachtrij.forEach(pasToe);                    // eigen onverzonden wijzigingen bovenop
     bewaar(); render();
   } catch (e) { if (!(e instanceof NetFout) && e.message !== 'nologin') console.warn(e); }
@@ -1065,6 +1065,7 @@ function renderScanRecent(){
   $('#scan-klaar').textContent = n ? 'Klaar, ' + n + ' op de lijst' : 'Klaar';
 }
 async function startScan(){
+  if (codesTabelOk === false) toast('Let op: gescande producten worden nog niet onthouden. Draai supabase-scannen.sql in Supabase.');
   scanToegevoegd = []; scanPauze = false; scanLaatste = { code: '', t: 0 };
   $('#scan').classList.add('open'); $('#scan').classList.remove('pauze');
   $('#scan-tip').textContent = 'Camera starten…'; renderScanRecent();
@@ -1084,9 +1085,11 @@ async function startScan(){
     if (!scanPauze && video.readyState >= 2) {
       try {
         const code = await leesCode(video);
-        if (code && /^\d{8,14}$/.test(code) && !(code === scanLaatste.code && Date.now() - scanLaatste.t < 3000)) {
-          scanLaatste = { code, t: Date.now() }; scanPiep(); verwerkCode(code);
-        }
+        const c = geldigeCode(code);
+        if (c && c === scanKandidaat.code && Date.now() - scanKandidaat.t < 1500) {
+          if (!(c === scanLaatste.code && Date.now() - scanLaatste.t < 3000)) { scanLaatste = { code: c, t: Date.now() }; scanPiep(); verwerkCode(c); }
+          scanKandidaat = { code: '', t: 0 };
+        } else if (c) scanKandidaat = { code: c, t: Date.now() };
       } catch {}
     }
     scanTimer = setTimeout(lus, 220);
@@ -1104,8 +1107,19 @@ function scanToevoegen(naam, cat){
   voegToe({ naam, categorie_id: cat || null });
   scanToegevoegd.push({ naam, cat: cat || D.pmap[norm(naam)] || gokCategorie(naam) }); renderScanRecent();
 }
+// Alleen echte EAN/UPC-codes (controlecijfer klopt); UPC-A (12 cijfers) als EAN-13 met een 0 ervoor
+let scanKandidaat = { code: '', t: 0 }, codesTabelOk = null;
+function geldigeCode(code){
+  code = String(code || '').trim();
+  if (!/^(\d{8}|\d{12}|\d{13})$/.test(code)) return null;
+  if (code.length === 12) code = '0' + code;
+  const cijfers = code.split('').map(Number), controle = cijfers.pop();
+  const som = cijfers.reverse().reduce((s, d, i) => s + d * (i % 2 === 0 ? 3 : 1), 0);
+  return (10 - som % 10) % 10 === controle ? code : null;
+}
 function verwerkCode(code){
-  const bekend = (D.codes || {})[code];
+  const codes = D.codes || {};
+  const bekend = codes[code] || (code.length === 13 && code[0] === '0' ? codes[code.slice(1)] : null);
   if (bekend) { scanToevoegen(bekend); return; }
   openNieuwProduct(code);
 }
@@ -1206,6 +1220,7 @@ $('#sn-annuleer').addEventListener('click', sluitNieuwProduct);
 $('#sn-form').addEventListener('submit', e => {
   e.preventDefault();
   const naam = hoofdletter($('#sn-naam').value.trim()); if (!naam || !snCode) return;
+  if (codesTabelOk === false) toast('Let op: de app kan gescande codes nog niet onthouden. Draai eerst supabase-scannen.sql in Supabase.');
   wijzig({ tabel: T.codes, soort: 'upsert', rij: { code: snCode, naam } });
   scanToevoegen(naam, snCat);
   sluitNieuwProduct();
