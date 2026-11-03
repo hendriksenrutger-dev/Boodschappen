@@ -728,13 +728,14 @@ const STANDAARD_INDELING = [
   { naam: 'Kaas en beleg', herken: /kaas|beleg/, woorden: 'kaas, geraspte kaas, jonge kaas, belegen kaas, oude kaas, plakken kaas, parmezaan, parmezaanse kaas, parmigiano, grana padano, pecorino, mozzarella, burrata, feta, ricotta, mascarpone, geitenkaas, brie, camembert, cheddar, gorgonzola, roomkaas, smeerkaas, zuivelspread, ham, rauwe ham, beenham, prosciutto, serranoham, salami, rookvlees, filet americain, leverworst, boterhamworst, cervelaat, hummus, tapenade, salade, eiersalade, tonijnsalade, kipsalade' },
   { naam: 'Vlees en vis', herken: /vlees|vis/, woorden: 'kip, kipfilet, kipdijen, kippendijen, kipdijfilet, kippenpoten, kippenbouten, kipgehakt, gehakt, rundergehakt, varkensgehakt, half-om-half, biefstuk, rundvlees, riblappen, stoofvlees, sukadelappen, varkenshaas, varkensvlees, speklappen, spekjes, spek, ontbijtspek, bacon, pancetta, worst, worstjes, rookworst, chorizo, shoarma, gyros, zalm, zalmfilet, gerookte zalm, kabeljauw, pangasius, tilapia, garnalen, scampi, vis, visfilet, mosselen, kalkoen, kalkoenfilet, lamsvlees, lamskoteletten, hamburger, hamburgers, braadworst, schnitzel, schnitzels, gehaktballen, kipnuggets, entrecote, ossenhaas, kalfsvlees' },
   { naam: 'Eieren en bakproducten', herken: /eieren|bak/, woorden: 'eieren, ei, eidooier, eidooiers, eiwit, eiwitten, scharreleieren, vrije-uitloopeieren, bloem, tarwebloem, patentbloem, zelfrijzend bakmeel, bakmeel, suiker, kristalsuiker, basterdsuiker, poedersuiker, rietsuiker, vanillesuiker, vanille-extract, bakpoeder, gist, maizena, cacao, cacaopoeder, cakemix, pannenkoekenmix, chocoladedruppels, paneermeel' },
-  { naam: 'Chips en snoep', herken: /chips|snoep|noten/, woorden: 'chips, paprikachips, naturel chips, tortillachips, nachos, zoutjes, popcorn, borrelnoten, nootjes, noten, gemengde noten, walnoten, amandelen, cashewnoten, hazelnoten, pecannoten, macadamianoten, pistachenoten, pinda\'s, pindas, pijnboompitten, snoep, drop, winegums, lolly, lollys, zuurtjes, pepermunt, kauwgom, schuimpjes' },
+  { naam: 'Chips en snoep', herken: /chips|snoep|noten/, woorden: 'chips, paprikachips, naturel chips, tortillachips, nachos, zoutjes, popcorn, borrelnoten, nootjes, noten, gemengde noten, walnoten, amandelen, cashewnoten, hazelnoten, pecannoten, macadamianoten, pistachenoten, pinda\'s, pindas, pijnboompitten, snoep, drop, chocolade, melkchocolade, pure chocolade, witte chocolade, chocoladereep, reep, repen, proteinbar, proteïnebar, proteinereep, proteïnereep, eiwitreep, mueslireep, mueslirepen, koek, koekjes, winegums, lolly, lollys, zuurtjes, pepermunt, kauwgom, schuimpjes' },
   { naam: 'Kruiden', herken: /kruid|specerij/, woorden: 'zout, zeezout, peper, zwarte peper, peper en zout, zout en peper, kerrie, kerriepoeder, komijn, komijnzaad, kurkuma, kaneel, paprikapoeder, gerookt paprikapoeder, chilipoeder, chilivlokken, cayennepeper, gedroogde oregano, oregano, italiaanse kruiden, provençaalse kruiden, nootmuskaat, laurierblaadjes, laurier, knoflookpoeder, uienpoeder, gemberpoeder, garam masala, ras el hanout, kruidenmix, tacokruiden, bouillon, bouillonblokje, bouillonblokjes, bouillonpoeder, kippenbouillon, groentebouillon, runderbouillon, venkelzaad, venkelzaadjes, sesamzaad, sesamzaadjes, zaadjes' },
   { naam: 'Koffie en thee', herken: /koffie|thee/, woorden: 'koffie, koffiebonen, gemalen koffie, koffiepads, koffiecups, oploskoffie, thee, theezakjes, groene thee, muntthee' },
   { naam: 'Pasta, olie en sauzen', herken: /pasta/, woorden: 'pasta, spaghetti, rigatoni, penne, macaroni, fusilli, farfalle, linguine, tagliatelle, pappardelle, lasagnebladen, lasagne, orzo, gnocchi, pastasaus, pesto, passata, gezeefde tomaten, tomatenblokjes, gepelde tomaten, tomaten uit blik, tomaten in blik, tomatenpuree, tonijn, tonijn in blik, ansjovis, sardines, makreel in blik, olie, olijfolie, zonnebloemolie, arachideolie, azijn, balsamico, balsamicoazijn, wijnazijn, witte wijnazijn' },
   { naam: 'Wereldkeuken', herken: /wereld/, woorden: 'rijst, basmatirijst, pandanrijst, zilvervliesrijst, risottorijst, jasmijnrijst, noedels, mie, mienestjes, rijstnoedels, udon, sojasaus, ketjap, hoisinsaus, oestersaus, vissaus, teriyakisaus, sambal, sriracha, sweet chilisaus, currypasta, rode currypasta, groene currypasta, kokosmelk, kokosroom, sesamolie, tacoschelpen, couscous, bulgur, quinoa, soep, soepen, tomatensoep, mayonaise, ketchup, mosterd, saus, sauzen, satésaus, pindasaus' },
   { naam: 'Conserven', herken: /conserv/, woorden: 'kikkererwten, linzen, kidneybonen, bruine bonen, witte bonen, bonen in tomatensaus, mais, olijven, zwarte olijven, groene olijven, kappertjes, augurken, zilveruitjes, rode bieten in pot, doperwten in blik, sperziebonen in pot, appelmoes, ananas in blik, perziken in blik, fruit in blik' },
   { naam: 'Drogisterij', herken: /drogist|huishoud/, woorden: 'tandpasta, tandenborstel, shampoo, conditioner, douchegel, deodorant, wc-papier, toiletpapier, keukenrol, keukenpapier, wasmiddel, wasverzachter, afwasmiddel, vaatwastabletten, zeep, handzeep, tissues, zakdoekjes, scheermesjes, pleisters, wattenstaafjes, vuilniszakken, aluminiumfolie, huishoudfolie, bakpapier, afwasborstel, sponsjes' },
+  { naam: 'Wijn en bier', herken: /wijn|bier|drank/, woorden: 'wijn, rode wijn, witte wijn, rosé, rose, prosecco, cava, champagne, port, bier, pils, speciaalbier, alcoholvrij bier, radler' },
   { naam: 'Diepvries', herken: /diepvries/, woorden: 'diepvries, ijs, doperwten, erwten, friet, patat, pizza, vissticks, bladerdeeg, diepvriesspinazie, diepvriesgroente, ijsblokjes' },
 ];
 const GOK_WOORDEN = [];
@@ -1110,6 +1111,7 @@ function verwerkCode(code){
 }
 
 // Eerste keer: naam opzoeken in Open Food Facts en je eigen producten voorstellen
+function ontsleutel(s){ const t = document.createElement('textarea'); t.innerHTML = String(s || ''); return t.value; }
 function opgeschoondeNaam(p){
   let n = (p.product_name_nl || p.product_name || '').trim();
   (p.brands || '').split(',').map(b => b.trim()).filter(Boolean).forEach(b => {
@@ -1127,15 +1129,21 @@ function eigenProducten(){
   D.items.forEach(i => { if (!namen.has(norm(i.naam))) namen.set(norm(i.naam), i.naam); });
   return [...namen.values()];
 }
+// Welke eigen producten passen bij de gevonden naam? Alleen hele woorden tellen:
+// "Tomatenpuree" past bij "Tomatenpuree dubbel geconcentreerd", maar "Melk" en "Chocolade" niet bij "Melkchocolade".
+let snSterk = false;
 function lijktOp(gevonden){
-  const g = norm(gevonden); if (!g) return [];
-  const woorden = g.split(/[\s,()-]+/).filter(w => w.length >= 4);
-  return eigenProducten().map(n => {
-    const e = norm(n); let s = 0;
-    if (g.includes(e)) s += 10 + e.length;
-    e.split(/\s+/).forEach(w => { if (w.length >= 4 && woorden.some(x => x.includes(w) || w.includes(x))) s += 3; });
-    return { n, s };
-  }).filter(x => x.s > 0).sort((a, b) => b.s - a.s).slice(0, 4).map(x => x.n);
+  snSterk = false;
+  const woorden = norm(gevonden).split(/[^a-z0-9à-ÿ']+/).filter(Boolean);
+  if (!woorden.length) return [];
+  const uit = eigenProducten().map(n => {
+    const ew = norm(n).split(/[^a-z0-9à-ÿ']+/).filter(Boolean);
+    if (!ew.length || !ew.every(w => woorden.includes(w))) return null;
+    const vooraan = ew.every((w, i) => woorden[i] === w);           // eigen naam staat vooraan
+    return { n, s: ew.length * 10 + (vooraan ? 50 : 0), vooraan };
+  }).filter(Boolean).sort((a, b) => b.s - a.s).slice(0, 4);
+  snSterk = !!(uit[0] && uit[0].vooraan);
+  return uit.map(x => x.n);
 }
 function renderSnCats(){
   const naam = $('#sn-naam').value;
@@ -1157,6 +1165,7 @@ async function openNieuwProduct(code){
     const j = await r.json();
     if (j && j.status === 1 && j.product) {
       const p = j.product;
+      ['product_name', 'product_name_nl', 'brands', 'quantity'].forEach(k => { if (p[k]) p[k] = ontsleutel(p[k]); });
       gevonden = [p.brands ? p.brands.split(',')[0].trim() : '', p.product_name_nl || p.product_name || '', p.quantity || ''].filter(Boolean).join(' ');
       kort = opgeschoondeNaam(p);
     }
@@ -1164,8 +1173,8 @@ async function openNieuwProduct(code){
   if (snCode !== code) return;                            // intussen gesloten of andere code
   $('#sn-titel').textContent = gevonden ? 'Nieuw product · gevonden in Open Food Facts' : 'Nieuw product · niet gevonden';
   $('#sn-gevonden').textContent = gevonden || 'Typ hoe het op je lijst moet heten, of kies een van je eigen producten.';
-  snVoorstel = lijktOp(gevonden || kort);
-  $('#sn-naam').value = snVoorstel[0] || kort || '';
+  snVoorstel = lijktOp(kort || gevonden);
+  $('#sn-naam').value = (snSterk && snVoorstel[0]) || kort || '';
   vulEigen();
   snCat = null; renderSnCats();
   markeerEigen();
