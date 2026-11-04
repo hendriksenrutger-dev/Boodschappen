@@ -105,6 +105,7 @@ h2{margin:0;font-family:var(--display);font-weight:700;font-size:22px}
 .kr-standen button[aria-pressed="true"].kr-genoeg{border:2px solid var(--accent)}
 .kr-standen button[aria-pressed="true"].kr-bijna{border:2px solid #8A4410}
 .kr-standen button[aria-pressed="true"].kr-op{border:2px solid #9B2C1F}
+.kr-oplijst{display:flex;align-items:center;justify-content:center;gap:8px;height:52px;border-radius:14px;border:1.5px solid var(--accent);background:var(--kaart);color:var(--accent);font-size:15px;font-weight:600;width:100%}
 .kr-melding{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;background:#FBEBD9;color:#8A4410;font-size:14px;font-weight:500}
 #scan-modus{order:2;height:34px;padding:0 14px;border-radius:999px;background:#E9A06B;color:#1C1B19;font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px}
 #scan-lamp{order:3}
@@ -541,6 +542,7 @@ select.veld{appearance:none;-webkit-appearance:none;background-image:url("data:i
       <span style="font-size:15px;font-weight:500">Aantal potjes</span>
       <div class="stapper-rij"><button id="kr-min" aria-label="Minder">−</button><span id="kr-aantal">1</span><button id="kr-plus" aria-label="Meer">+</button></div>
     </div>
+    <button class="kr-oplijst" id="kr-oplijst" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Zet op de boodschappenlijst</button>
     <div class="kr-melding" id="kr-melding" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg><span id="kr-melding-tekst"></span></div>
     <button class="hoofdknop" id="kr-klaar">Klaar</button>
     <button class="tweedeknop gevaar" id="kr-weg">Uit de voorraad halen</button>
@@ -1000,15 +1002,21 @@ function renderKruidBlad(){
   $('#kr-titel').textContent = k.naam;
   document.querySelectorAll('#kr-standen [data-stand]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.stand === (k.stand || 'genoeg'))));
   $('#kr-aantal').textContent = k.aantal || 0;
-  const opLijst = (k.stand === 'bijna' || k.stand === 'op') && openOpLijst(k.naam);
+  const raakt = k.stand === 'bijna' || k.stand === 'op';
+  const opLijst = raakt && openOpLijst(k.naam);
+  $('#kr-oplijst').hidden = !raakt || opLijst;
   $('#kr-melding').hidden = !opLijst; $('#kr-melding-tekst').textContent = k.naam + ' staat op de boodschappenlijst';
 }
 function sluitKruid(){ krId = null; $('#kr-blad').classList.remove('open'); if (huidig === 'kruiden') renderKruiden(); }
 function zetStand(id, stand){
-  let naam = '';
-  wijzigKruiden(l => { const k = l.find(x => x.id === id); if (k) { k.stand = stand; naam = k.naam; } });
-  if ((stand === 'bijna' || stand === 'op') && naam && !openOpLijst(naam)) { voegToe({ naam }); toast(naam + ' staat op de boodschappenlijst'); }
+  // Alleen de stand. Op de lijst zetten doe je zelf met de knop.
+  wijzigKruiden(l => { const k = l.find(x => x.id === id); if (k) k.stand = stand; });
 }
+$('#kr-oplijst').addEventListener('click', () => {
+  const k = kruiden().find(x => x.id === krId); if (!k) return;
+  if (!openOpLijst(k.naam)) { voegToe({ naam: k.naam }); toast(k.naam + ' staat op de boodschappenlijst'); }
+  renderKruidBlad();
+});
 $('#kr-standen').addEventListener('click', e => { const b = e.target.closest('[data-stand]'); if (!b || !krId) return; zetStand(krId, b.dataset.stand); renderKruidBlad(); });
 $('#kr-min').addEventListener('click', () => { wijzigKruiden(l => { const k = l.find(x => x.id === krId); if (k) k.aantal = Math.max(0, (k.aantal || 0) - 1); }); renderKruidBlad(); });
 $('#kr-plus').addEventListener('click', () => { wijzigKruiden(l => { const k = l.find(x => x.id === krId); if (k) k.aantal = (k.aantal || 0) + 1; }); renderKruidBlad(); });
