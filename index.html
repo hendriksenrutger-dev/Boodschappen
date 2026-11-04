@@ -567,7 +567,7 @@ select.veld{appearance:none;-webkit-appearance:none;background-image:url("data:i
   <div class="kader"><div class="scanlijn"></div></div>
   <p class="scan-tip" id="scan-tip">Richt op de streepjescode</p>
   <div class="scan-top">
-    <span id="scan-modus" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="3" width="10" height="4" rx="1"/><path d="M6 7h12v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2z"/><path d="M9 12h6M9 15.5h6"/></svg>Kruiden tellen</span>
+    <span id="scan-modus" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="3" width="10" height="4" rx="1"/><path d="M6 7h12v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2z"/><path d="M9 12h6M9 15.5h6"/></svg>Potjes toevoegen</span>
     <button class="scan-knop" id="scan-sluit" aria-label="Sluiten"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <button class="scan-knop" id="scan-lamp" aria-label="Zaklamp" aria-pressed="false" hidden><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2h8l-1 6H9z"/><path d="M9 8l-1 4v8a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-8l-1-4"/></svg></button>
   </div>
@@ -1029,16 +1029,14 @@ $('#kr-weg').addEventListener('click', () => {
   toast(k.naam + ' uit de voorraad gehaald'); sluitKruid();
 });
 
-// Scannen in de kruidenla = tellen. Eerste scan van een kruid in deze ronde zet het aantal op 1, elke volgende +1.
-let krSessie = {};
+// Scannen in de kruidenla: elke scan is één potje erbij (ook na het sluiten van de scanner).
 function kruidGeteld(naam, code){
   let info = '';
   wijzigKruiden(l => {
     let k = (code && l.find(x => (x.codes || []).includes(code))) || l.find(x => norm(x.naam) === norm(naam));
     if (!k) { k = { id: uuid(), naam: hoofdletter(naam), aantal: 0, stand: 'genoeg', codes: [] }; l.push(k); info = 'nieuw'; }
     if (code && !(k.codes || []).includes(code)) k.codes = (k.codes || []).concat(code);
-    krSessie[k.id] = (krSessie[k.id] || 0) + 1;
-    k.aantal = krSessie[k.id];
+    k.aantal = (k.aantal || 0) + 1;
     if (k.stand === 'op') k.stand = 'genoeg';
     if (!info) info = 'nu ' + k.aantal + '×';
     naam = k.naam;
@@ -1337,7 +1335,6 @@ async function tikScherp(){
 async function startScan(modus){
   scanModus = modus === 'kruiden' ? 'kruiden' : 'lijst';
   $('#scan-modus').hidden = scanModus !== 'kruiden';
-  krSessie = {};
   if (codesTabelOk === false) toast('Let op: gescande producten worden nog niet onthouden. Draai supabase-scannen.sql in Supabase.');
   scanToegevoegd = []; scanPauze = false; scanLaatste = { code: '', t: 0 };
   $('#scan').classList.add('open'); $('#scan').classList.remove('pauze');
